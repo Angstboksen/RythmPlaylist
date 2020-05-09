@@ -12,23 +12,23 @@ client.on('ready', () => {
 });
 
 const validateArgs = async (message, args) => {
-    const command = commands[args]
+    const command = commands[args[0]]
     const channel = message.member.voice.channel
     if (!command) {
-        message.reply("Slutt å vær så retarded a please!")
+        message.channel.send(":zany_face: **Durr! Slutt å vær så retarded a please!**")
         return
     }
     if (channel) {
-        command.run(channel, message)
+        command.run(channel, message, args)
     } else {
-        message.channel.send('You need to join a voice channel first!');
+        message.channel.send(':robot: **You need to join a voice channel first!**');
     }
 }
 
 client.on('message', message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return;
-    const args = message.content.slice(prefix.length).split(' ');
-    args.shift().toLowerCase();
+    const args = message.content.slice(prefix.length+1).split(' ');
+    args.map(a => a = a.toLowerCase())
     validateArgs(message, args)
 });
 
