@@ -1,2 +1,2 @@
 # RythmPlaylist
-Discord bot for saving playlists for the Rythm bot
+Discord bot for saving and playing playlists. 
