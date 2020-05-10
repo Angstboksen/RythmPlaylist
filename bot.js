@@ -25,7 +25,7 @@ const validateMessage = async (message) => {
     if (channel) {
         BOT.execute(message)
     } else {
-        message.channel.send(':robot: **You need to join a voice channel first!**');
+        message.channel.send(':robot: **Du må være i en voice channel bro!** :thinking:');
     }
 }
 

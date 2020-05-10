@@ -242,6 +242,7 @@ class RythmPlaylist {
 
     async play(song) {
         if (!song) {
+            this.textChannel.send(":white_check_mark: :scroll: **Da var denne listen ferdig for denne gang!** :white_check_mark:")
             this.voiceChannel.leave();
             return;
         }
@@ -257,11 +258,28 @@ class RythmPlaylist {
                     this.play(this.queue.songs[0]);
                 })
                 .on("error", error => this.textChannel.send(":sad: **Det skjedde en feil med avspillingen av denne linken: **" + "`" + song + "` :rotating_lights"));
-            dispatcher.setVolumeLogarithmic(this.queue.volume / 5);
+            dispatcher.setVolumeLogarithmic(this.queue.volume / 5)
             this.textChannel.send(":arrow_forward: **Now playing: ** `" + info.title + "` ")
         } catch (e) {
             this.textChannel.send(":sad: **Det skjedde en feil med avspillingen av denne linken: **" + "`" + song + "` :rotating_lights")
         }
+    }
+
+    skip(channel) {
+        if (!channel) {
+            this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
+        }
+        this.connection.dispatcher.end()
+        this.textChannel.send(":mage: **Skippetipangen, bort med den sangen!** :no_entry:")
+    }
+
+    stop(channel) {
+        if (!channel) {
+            this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
+        }
+        this.textChannel.send(":mage: **Fjernet alle sanger fra køen! ** :pencil2:")
+        this.queue.songs = []
+        this.connection.dispatcher.end()
     }
 
     _fetchAllCommands() {
@@ -292,8 +310,8 @@ class RythmPlaylist {
                 }
             },
 
-            'kick': {
-                name: "kick",
+            'leave': {
+                name: "leave",
                 validLength: 1,
                 run: (message, args) => {
                     if (this.alreadyJoined()) {
@@ -355,37 +373,27 @@ class RythmPlaylist {
                         this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
                     }
                 }
+            },
+
+            'skip': {
+                name: 'skip',
+                validLength: 1,
+                run: (message, args) => {
+                    const channel = message.member.voice.channel
+                    this.skip(channel)
+                }
+            },
+
+            'stop': {
+                name: 'stop',
+                validLength: 1,
+                run: (message, args) => {
+                    const channel = message.member.voice.channel
+                    this.stop(channel)
+                }
             }
         }
     }
 }
 
 export default RythmPlaylist
-
-/*const playlist = await playListExists(args[1])
-                    if (player) {
-                        player.pause()
-                    } else {
-                        if (playlist) {
-                            let queue = playlist.urls.map(url => url = youtubeify(url))
-                            let count = 0
-                            const connection = await channel.join()
-                            let info = await ytdl.getInfo(queue[0])
-                            player = connection.play(ytdl(info.video_url, { filter: 'audioonly' }))
-                                .on('finish', async () => {
-                                    count++
-                                    if (queue.length >= count) {
-                                        info = await ytdl.getInfo(queue[count])
-                                        play(connection, info.video_url, queue, count)
-                                        message.channel.send(":arrow_forward: **Now playing: ** `" + info.title + "` **from list: ** :scroll: " + "`" + playlist.name + "`")
-                                    } else {
-                                        channel.leave()
-                                    }
-                                }).on('error', (error) => {
-                                    console.log(error)
-                                })
-                            message.channel.send(":arrow_forward: **Now playing: ** `" + info.title + "` **from list: ** :scroll: " + "`" + playlist.name + "`")
-                        }
-                    }
-                }
-            }*/
