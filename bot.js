@@ -1,25 +1,29 @@
 
+import RythmPlaylist from './bot/RythmPlaylist'
+import Discord from 'discord.js'
+
 require('dotenv').config()
-const Discord = require('discord.js');
 const client = new Discord.Client();
-
-const commands = require('./commands').commands()
-
+let BOT
 const prefix = '!pp'
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
-const validateArgs = async (message, args) => {
-    const command = commands[args[0]]
+client.once("reconnecting", () => {
+    console.log("Reconnecting!");
+});
+
+client.once("disconnect", () => {
+    console.log("Disconnect!");
+});
+
+const validateMessage = async (message) => {
     const channel = message.member.voice.channel
-    if (!command) {
-        message.channel.send(":zany_face: **Durr! Slutt å vær så retarded a please!**")
-        return
-    }
+    BOT = BOT ? BOT : new RythmPlaylist(message, channel)
     if (channel) {
-        command.run(channel, message, args)
+        BOT.execute(message)
     } else {
         message.channel.send(':robot: **You need to join a voice channel first!**');
     }
@@ -27,9 +31,7 @@ const validateArgs = async (message, args) => {
 
 client.on('message', message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return;
-    const args = message.content.slice(prefix.length+1).split(' ');
-    args.map(a => a = a.toLowerCase())
-    validateArgs(message, args)
+    validateMessage(message)
 });
 
 client.login(process.env.BOT_TOKEN);

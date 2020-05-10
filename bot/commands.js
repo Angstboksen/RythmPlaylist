@@ -1,7 +1,4 @@
 
-
-const ytdl = require('ytdl-core');
-const fs = require('fs');
 const _file_ = process.env.PLAYLIST_FILE
 
 let player = undefined
@@ -101,15 +98,6 @@ _readFile = (message) => {
     });
 }
 
-alreadyJoined = (channel) => {
-    for (let user of channel.members) {
-        if (user[0] === process.env.BOT_ID) {
-            return true
-        }
-    }
-    return false
-}
-
 matchYoutubeUrl = (url) => {
     var p = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
     if (url.match(p)) {
@@ -206,6 +194,18 @@ youtubeify = (url) => {
     return "https://www.youtube.com/watch?v=" + url
 }
 
+play = (connection, url, queue, count) => {
+    let c = count++
+    if (queue.length > count) {
+        connection.play(ytdl(url, { filter: 'audioonly' })).on('finished', () => {
+            play(connection, queue[c], queue, c)
+        })
+    } else {
+        play(connection, queue[c], queue, c)
+    }
+}
+
+
 exports.commands = function () {
     return {
         play: {
@@ -292,18 +292,18 @@ exports.commands = function () {
                         const connection = await channel.join()
                         let info = await ytdl.getInfo(queue[0])
                         player = connection.play(ytdl(info.video_url, { filter: 'audioonly' }))
-                        .on('finish', async () => {
-                            count++
-                            if(queue.length >= count) {
-                                info = await ytdl.getInfo(queue[count])
-                                connection.play(ytdl(info.video_url, { filter: 'audioonly' }))
-                                message.channel.send(":arrow_forward: **Now playing: ** `" + info.title + "` **from list: ** :scroll: " + "`" + playlist.name + "`")
-                            } else {
-                                channel.leave()
-                            }
-                        }).on('error', (error) => {
-                            console.log(error)
-                        })
+                            .on('finish', async () => {
+                                count++
+                                if (queue.length >= count) {
+                                    info = await ytdl.getInfo(queue[count])
+                                    play(connection, info.video_url, queue, count)
+                                    message.channel.send(":arrow_forward: **Now playing: ** `" + info.title + "` **from list: ** :scroll: " + "`" + playlist.name + "`")
+                                } else {
+                                    channel.leave()
+                                }
+                            }).on('error', (error) => {
+                                console.log(error)
+                            })
                         message.channel.send(":arrow_forward: **Now playing: ** `" + info.title + "` **from list: ** :scroll: " + "`" + playlist.name + "`")
                     }
                 }
