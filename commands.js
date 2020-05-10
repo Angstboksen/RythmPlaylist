@@ -4,6 +4,8 @@ const ytdl = require('ytdl-core');
 const fs = require('fs');
 const _file_ = process.env.PLAYLIST_FILE
 
+let player = undefined
+
 let obj = {
     playlists: []
 };
@@ -26,11 +28,11 @@ playListExists = async (name) => {
                 obj = JSON.parse(data);
                 for (let playlist of obj.playlists) {
                     if (playlist.name === name) {
-                        resolve(true)
+                        resolve(playlist)
                         return
                     }
                 }
-                resolve(false)
+                resolve(undefined)
             }
         })
     })
@@ -132,8 +134,9 @@ getPlaylistInstance = (name, list) => {
 }
 
 _addSongToList = async (message, args) => {
+    var p = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/
     const playlistname = args[1]
-    const url = args[2]
+    const url = args[2].match(p)[1]
     return await new Promise((resolve, reject) => {
         fs.readFile(_file_, function readFileCallback(err, data) {
             if (err) {
@@ -143,13 +146,13 @@ _addSongToList = async (message, args) => {
                 const obj = JSON.parse(data)
                 const playlists = obj.playlists
                 let instance = getPlaylistInstance(playlistname, playlists)
-                if (!instance.trustedusers.includes(message.member.user.tag)) {
+                if (!instance.trustedusers.includes(message.member.user.tag.replace(/\s+/g, ''))) {
                     message.channel.send(":police_car: :cop: **Du har ikke lov til å endre denne listen** :scroll: :rotating_light:")
                 }
 
                 if (!instance.urls.includes(url)) {
                     instance.urls.push(url)
-                    message.channel.send(":white_check_mark: **La til url: **" + "`" + url + "` **i listen** :scroll:")
+                    message.channel.send(":white_check_mark: **La til url: **" + "`" + "https://www.youtube.com/watch?v=" + url + "` **i listen** :scroll:")
                     resolve(writeToFile(obj))
                 } else {
                     message.channel.send(":rotating_light: **Sangen finnes allerede i listen!** :rotating_light:")
@@ -166,7 +169,7 @@ _trustUser = async (message, args) => {
     const admin = message.member.user.tag
     const playlistname = args[1]
     const trusted = args[2]
-    if(admin === trusted) {
+    if (admin === trusted) {
         message.channel.send(":thinking: **Du stoler brått allerede på deg selv, eller?** :thinking:")
         return
     }
@@ -199,18 +202,19 @@ _validateTrustCredentials = (args) => {
     return playListExists(playlistname) && user.match(regex)
 }
 
+youtubeify = (url) => {
+    return "https://www.youtube.com/watch?v=" + url
+}
+
 exports.commands = function () {
     return {
         play: {
-            run: async (channel, message, args, playlistname = "") => {
+            run: async (channel, message, args, ) => {
                 if (!_validateCommandLength(args, 2, message)) return
                 const connection = await channel.join();
-                if (playlistname == "") {
-                    message.channel.send(":arrow_forward: **Now playing: ** `" + args[1] + "` ")
-                    connection.play(ytdl(args[1], { filter: 'audioonly' }));
-                } else {
-
-                }
+                const info = await ytdl.getInfo((args[1]))
+                message.channel.send(":arrow_forward: **Now playing: ** `" + info.title + "` ")
+                connection.play(ytdl(info.video_url, { filter: 'audioonly' }));
             }
         },
 
@@ -263,9 +267,9 @@ exports.commands = function () {
         trust: {
             run: (channel, message, args) => {
                 if (!_validateCommandLength(args, 3, message)) return
-                if(_validateTrustCredentials(args)){
+                if (_validateTrustCredentials(args)) {
                     _trustUser(message, args)
-                }else {
+                } else {
                     message.channel.send(":thinking: **Det er ikke måten man legger til en trusted bruker i en liste** :joy: :joy: ")
                 }
             }
@@ -273,6 +277,43 @@ exports.commands = function () {
 
         listall: {
             run: (channel, message, args) => { _readFile(message) }
+        },
+
+        playlist: {
+            run: async (channel, message, args) => {
+                if (!_validateCommandLength(args, 2, message)) return
+                const playlist = await playListExists(args[1])
+                if (player) {
+                    player.pause()
+                } else {
+                    if (playlist) {
+                        let queue = playlist.urls.map(url => url = youtubeify(url))
+                        let count = 0
+                        const connection = await channel.join()
+                        let info = await ytdl.getInfo(queue[0])
+                        player = connection.play(ytdl(info.video_url, { filter: 'audioonly' }))
+                        .on('finish', async () => {
+                            count++
+                            if(queue.length >= count) {
+                                info = await ytdl.getInfo(queue[count])
+                                connection.play(ytdl(info.video_url, { filter: 'audioonly' }))
+                                message.channel.send(":arrow_forward: **Now playing: ** `" + info.title + "` **from list: ** :scroll: " + "`" + playlist.name + "`")
+                            } else {
+                                channel.leave()
+                            }
+                        }).on('error', (error) => {
+                            console.log(error)
+                        })
+                        message.channel.send(":arrow_forward: **Now playing: ** `" + info.title + "` **from list: ** :scroll: " + "`" + playlist.name + "`")
+                    }
+                }
+                /*const connection = await channel.join();
+                if (playlistname == "") {
+                    
+                } else {
+
+                }*/
+            }
         }
     }
 }
