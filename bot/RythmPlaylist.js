@@ -1,6 +1,7 @@
 import QueueConstruct from './QueueConstruct'
 import ytdl from 'ytdl-core'
 import fs from 'fs'
+import { MessageEmbed } from 'discord.js'
 
 const ytRegex = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/
 
@@ -20,6 +21,7 @@ class RythmPlaylist {
 
     execute(message) {
         this.textChannel = message.channel
+        this.voiceChannel = message.member.voice.channel
         let args = message.content.slice(4).split(' ');
         args.map(a => a = a.toLowerCase())
         const givenCommand = args[0]
@@ -30,6 +32,8 @@ class RythmPlaylist {
                 return
             }
             command.run(message, args)
+        }else{
+            this.writeTullekopp()
         }
     }
 
@@ -115,7 +119,7 @@ class RythmPlaylist {
             } else {
                 obj.playlists.push({
                     name: name,
-                    urls: [],
+                    songs: [],
                     creator: sender,
                     trustedusers: [sender]
                 })
@@ -163,19 +167,51 @@ class RythmPlaylist {
             this.textChannel.send(":rotating_light: **Ugyldig link** :rotating_light:")
             return
         }
-        url = url[1]
+        url = url[0]
+        const song = await ytdl.getInfo(url)
+        const filtered = {
+            title: song.title,
+            length: parseInt(song.length_seconds),
+            url: song.video_url,
+        }
         if (!instance.trustedusers.includes(user.replace(/\s+/g, ''))) {
             this.textChannel.send(":police_car: :cop: **Du har ikke lov til å endre denne listen** :scroll: :rotating_light:")
             return
         }
-        if (!instance.urls.includes(url)) {
-            instance.urls.push(url)
+        let exists = false
+        for (let s of instance.songs) {
+            if (s.url === filtered.url) {
+                exists = true
+            }
+        }
+        if (!exists) {
+            instance.songs.push(filtered)
             this.textChannel.send(":white_check_mark: **La til url: **" + "`" + args[2] + "` **i listen** :scroll:")
             this._writeToFile(obj)
+            this.enqueue(filtered)
         } else {
             this.textChannel.send(":rotating_light: **Sangen finnes allerede i listen!** :rotating_light:")
-
         }
+    }
+
+    enqueue(song) {
+        if (this.queue) {
+            this.queue.enqueue(song)
+            this.showQueue()
+        }
+    }
+
+    showQueue() {
+        let embed = new MessageEmbed()
+        embed.setTitle(":scroll: **Slik ser køen ut** :scroll: | **Antall sanger: **" + this.queue.size())
+        let text = ""
+        let count = 1
+        for (let song of this.queue.songs) {
+            text += "**" + count + ")** :notes: **Tittel: **" + song.title + "\n"
+            count++
+        }
+        embed.setDescription(text)
+        this.textChannel.send(embed)
     }
 
     validateTrustCredentials(args) {
@@ -216,7 +252,7 @@ class RythmPlaylist {
         let count = 0
         for (let list of obj.playlists) {
             count++
-            const amount = list.urls.length
+            const amount = list.songs.length
             msg += ":printer: **Liste: **" + "`" + list.name + "`" + " | **Antall sanger:** " + "`" + amount + "`" + " | **Administrator:** " + "`" + list.creator + "` :scroll: \n"
         }
         if (count === 0) {
@@ -229,39 +265,50 @@ class RythmPlaylist {
         const obj = await this._readFile()
         const playlists = obj.playlists
         const playlist = await this.getPlaylistInstance(name, playlists)
-        if (playlist.urls.length <= 0) {
+        if (playlist.songs.length <= 0) {
             this.textChannel.send(":clown: **Spillelisten: **" + "`" + name + "` **har ingen sanger** :clown:")
             return
         }
         this.connection = await this.voiceChannel.join()
-        let temp = new QueueConstruct(this.textChannel, this.voiceChannel, this.connection)
-        temp.songs = playlist.urls.map(url => url = this.youtubeify(url))
-        this.queue = temp
-        this.play(this.queue.songs[0])
+        this.queue = new QueueConstruct(this.textChannel, this.voiceChannel, this.connection, playlist.songs)
+        this.play()
     }
 
-    async play(song) {
-        if (!song) {
-            this.textChannel.send(":white_check_mark: :scroll: **Da var denne listen ferdig for denne gang!** :white_check_mark:")
+    async play() {
+        if (this.queue.size() <= 0) {
+            this.queue.playing = false
+            this.textChannel.send(":white_check_mark: :scroll: **Da var denne køen ferdig for denne gang!** :white_check_mark:")
             this.voiceChannel.leave();
             return;
         }
 
         try {
+            this.queue.playing = true
+            const song = this.queue.next()
 
-            const info = await ytdl.getInfo(song)
+            const estimatedtime = await this.queue.getEstimatedTime()
 
             const dispatcher = this.connection
-                .play(ytdl(info.video_url))
+                .play(ytdl(song.url), {filter: 'audioonly'})
                 .on("finish", () => {
-                    this.queue.songs.shift();
-                    this.play(this.queue.songs[0]);
+                    this.play();
                 })
-                .on("error", error => this.textChannel.send(":sad: **Det skjedde en feil med avspillingen av denne linken: **" + "`" + song + "` :rotating_lights"));
+                .on("error", error => this.textChannel.send(":disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken: **" + "`" + song.url + "` :rotating_light:"));
             dispatcher.setVolumeLogarithmic(this.queue.volume / 5)
-            this.textChannel.send(":arrow_forward: **Now playing: ** `" + info.title + "` ")
+            this.queue.dequeue();
+            let text =
+                ":notes: **Tittel: **" + song.title + "\n" +
+                ":beginner: **Youtube link: **" + song.url + "\n" +
+                ":arrows_counterclockwise: **Antall sanger fortsatt i køen:** " + this.queue.size() + "\n" +
+                ":timer: **Beregnet total tid: **" + estimatedtime
+            let embed = new MessageEmbed()
+            embed.setColor("RANDOM")
+            embed.setTitle(":arrow_forward: **Hva spilles nå? ** :arrow_forward:")
+            embed.setDescription(text)
+            this.textChannel.send(embed)
         } catch (e) {
-            this.textChannel.send(":sad: **Det skjedde en feil med avspillingen av denne linken: **" + "`" + song + "` :rotating_lights")
+            console.log(e)
+            this.textChannel.send(":disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken: **" + "`" + song.url + "` :rotating_light:")
         }
     }
 
@@ -288,10 +335,20 @@ class RythmPlaylist {
                 name: "play",
                 validLength: 2,
                 run: async (message, args) => {
-                    this.connection = await this.voiceChannel.join();
-                    this.queue = new QueueConstruct(this.connection, this.voiceChannel, this.textChannel)
                     try {
-                        this.play(args[1]);
+                        this.connection = await this.voiceChannel.join();
+                        const song = await ytdl.getInfo(args[1])
+                        const filtered = {
+                            title: song.title,
+                            url: song.video_url,
+                            length: parseInt(song.length_seconds)
+                        }
+                        if(this.queue && this.queue.playing){
+                            this.enqueue(filtered)
+                            return
+                        }
+                        this.queue = new QueueConstruct(this.textChannel, this.voiceChannel, this.connection, [filtered])
+                        this.play();
 
                     } catch (e) {
                         this.textChannel.send(":x: **Dette er ikke en gyldig URL** :x:")
@@ -390,6 +447,14 @@ class RythmPlaylist {
                 run: (message, args) => {
                     const channel = message.member.voice.channel
                     this.stop(channel)
+                }
+            },
+
+            'queue': {
+                name: 'queue',
+                validLength: 1,
+                run: (message, args) => {
+                    this.showQueue()
                 }
             }
         }
