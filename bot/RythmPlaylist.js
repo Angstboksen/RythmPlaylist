@@ -11,7 +11,7 @@ class RythmPlaylist {
         this.commands = this._fetchAllCommands()
         this.textChannel = message.channel
         this.voiceChannel = voiceChannel
-        this.queue = null
+        this.queue = new QueueConstruct(null, null, null)
         this.file = process.env.PLAYLIST_FILE
     }
 
@@ -32,7 +32,7 @@ class RythmPlaylist {
                 return
             }
             command.run(message, args)
-        }else{
+        } else {
             this.writeTullekopp()
         }
     }
@@ -203,13 +203,15 @@ class RythmPlaylist {
 
     showQueue() {
         let embed = new MessageEmbed()
-        embed.setTitle(":scroll: **Slik ser køen ut** :scroll: | **Antall sanger: **" + this.queue.size())
         let text = ""
-        let count = 1
+        let count = 0
         for (let song of this.queue.songs) {
-            text += "**" + count + ")** :notes: **Tittel: **" + song.title + "\n"
             count++
+            text += "**" + count + ")** :notes: **Tittel: **" + song.title + "\n"
         }
+        let title = count === 0 ? ":scroll: **Køen er tom!** :scroll:" :
+            ":scroll: **Slik ser køen ut** :scroll: | **Antall sanger: **" + this.queue.size()
+        embed.setTitle(title)
         embed.setDescription(text)
         this.textChannel.send(embed)
     }
@@ -289,7 +291,7 @@ class RythmPlaylist {
             const estimatedtime = await this.queue.getEstimatedTime()
 
             const dispatcher = this.connection
-                .play(ytdl(song.url), {filter: 'audioonly'})
+                .play(ytdl(song.url), { filter: 'audioonly' })
                 .on("finish", () => {
                     this.play();
                 })
@@ -343,7 +345,7 @@ class RythmPlaylist {
                             url: song.video_url,
                             length: parseInt(song.length_seconds)
                         }
-                        if(this.queue && this.queue.playing){
+                        if (this.queue && this.queue.playing) {
                             this.enqueue(filtered)
                             return
                         }
