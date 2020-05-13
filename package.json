@@ -1,19 +1,16 @@
 {
-    "name": "RythmPlaylist",
+    "name": "rythmplaylist",
     "version": "1.0.0",
     "description": "Discord bot for saving and playing playlists.",
     "main": "index.js",
     "type": "module",
     "dependencies": {
-        "babel-node": "0.0.1-security",
         "discord.js": "^12.2.0",
         "dotenv": "^8.2.0",
         "ffmpeg": "^0.0.4",
         "opusscript": "^0.0.7",
-        "ytdl-core": "^2.1.2",
-        "babel-cli": "^6.26.0",
-        "babel-preset-es2015": "^6.24.1",
-        "rimraf": "^3.0.2"
+        "rimraf": "^3.0.2",
+        "ytdl-core": "^2.1.2"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
