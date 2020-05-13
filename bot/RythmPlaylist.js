@@ -5,6 +5,7 @@ import Song from './Song.js'
 import { MessageEmbed } from 'discord.js'
 import Playlist from './Playlist.js'
 import HELPERS from './helpers.js'
+import YoutubeSearcher from './YoutubeSearcher.js'
 
 class RythmPlaylist {
 
@@ -113,6 +114,7 @@ class RythmPlaylist {
     }
 
     async addSongToList(args, user) {
+        const keywords = args.slice(2, args.length)
         const playlistname = args[1]
         const obj = await this._readFile()
         const playlists = obj.playlists
@@ -121,25 +123,21 @@ class RythmPlaylist {
             this.textChannel.send(":rotating_light: :scroll: **Listen finnes ikke** :scroll: :rotating_light:")
             return
         }
-        let url = args[2].match(HELPERS.ytRegex)
-        if (!url) {
-            this.textChannel.send(":rotating_light: **Ugyldig link** :rotating_light:")
-            return
-        }
-        url = url[0]
         try {
-            const song = await ytdl.getInfo(url)
-            const filtered = new Song(song.video_url, song.title, parseInt(song.length_seconds))
+            const song = await this.search(keywords)
+            if(!song) {
+                this.textChannel.send(":rotating_light: **Fant ingen sanger** :rotating_light:")
+            }
             if (!instance.trustedusers.includes(user.replace(/\s+/g, ''))) {
                 this.textChannel.send(":police_car: :cop: **Du har ikke lov til å endre denne listen** :scroll: :rotating_light:")
                 return
             }
-            let exists = instance.hasSong(filtered.url)
+            let exists = instance.hasSong(song.url)
             if (!exists) {
-                instance.songs.push(filtered)
-                this.textChannel.send(":white_check_mark: **La til: **" + "`" + filtered.title + "` **i listen** :scroll:")
+                instance.songs.push(song)
+                this.textChannel.send(":white_check_mark: **La til: **" + "`" + song.title + "` **i listen** :scroll:")
                 this._writeToFile(obj)
-                this.enqueue(filtered)
+                this.enqueue(song)
 
             } else {
                 this.textChannel.send(":rotating_light: **Sangen finnes allerede i listen!** :rotating_light:")
@@ -224,6 +222,20 @@ class RythmPlaylist {
         this.play()
     }
 
+    async search(args) {
+        const searcher = new YoutubeSearcher()
+        const keyword = args.join()
+        const url = await searcher.search(keyword)
+        if(!url) {
+            this.textChannel.send(":x: **Fant ingen videoer** :x:")
+            return undefined
+        }
+        const song = await ytdl.getInfo(url)
+        const filtered = new Song(song.video_url, song.title, parseInt(song.length_seconds))
+        return filtered
+
+    }
+
     async play() {
         if (this.queue.size() <= 0) {
             this.queue.playing = false
@@ -283,21 +295,26 @@ class RythmPlaylist {
         return {
             'play': {
                 name: "play",
-                validLength: 2,
+                validLength: -1,
                 run: async (message, args) => {
                     try {
-                        this.connection = await this.voiceChannel.join();
-                        const song = await ytdl.getInfo(args[1])
-                        const filtered = new Song(song.title, song.video_url, parseInt(song.length_seconds))
+                        if (args.length == 1) {
+                            this.textChannel.send(":x: **Du må spesifisere hva som skal avspilles mannen!** :x:")
+                        }
+                        const filtered = await this.search(args.slice(1, args.length))
+                        if(!filtered) {
+                            return
+                        }
                         if (this.queue && this.queue.playing) {
                             this.enqueue(filtered)
                             return
                         }
+                        this.connection = await this.voiceChannel.join();
                         this.queue = new QueueConstruct(this.textChannel, this.voiceChannel, this.connection, [filtered])
                         this.play();
 
                     } catch (e) {
-                        this.textChannel.send(":x: **Dette er ikke en gyldig URL** :x:")
+                       console.log(e)
                     }
                 }
             },
@@ -335,7 +352,7 @@ class RythmPlaylist {
 
             'add': {
                 name: "add",
-                validLength: 3,
+                validLength: -1,
                 run: (message, args) => {
                     if (this.validateAddCredentials(args)) {
                         const user = message.member.user.tag

@@ -18,8 +18,8 @@ class Playlist {
         return false
     }
 
-    addTrustedUsers(user) {
-        if (!this.trustedusers.uincludes(user)) {
+    addTrustedUser(user) {
+        if (!this.trustedusers.includes(user)) {
             this.trustedusers.push(user)
         }
     }

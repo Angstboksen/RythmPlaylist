@@ -4,6 +4,9 @@ import Playlist from './Playlist.js'
 const ytRegex = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/
 
 function validateCommandLength(args, length) {
+    if (length == -1) {
+        return true
+    }
     if (args.length !== length) {
         return false
     }
@@ -56,7 +59,7 @@ const HELPERS = {
     youtubeify: youtubeify,
     getPlaylistInstance: getPlaylistInstance,
     playListExists: playListExists,
-    formattedTime : formattedTime
+    formattedTime: formattedTime
 
 }
 
