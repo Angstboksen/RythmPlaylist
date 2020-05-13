@@ -1,4 +1,4 @@
-import QueueConstruct from './QueueConstruct'
+import QueueConstruct from './QueueConstruct.js'
 import ytdl from 'ytdl-core'
 import fs from 'fs'
 import { MessageEmbed } from 'discord.js'

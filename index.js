@@ -1,8 +1,9 @@
 
-import RythmPlaylist from './bot/RythmPlaylist'
+import RythmPlaylist from './bot/RythmPlaylist.js'
 import Discord from 'discord.js'
+import dotenv from 'dotenv'
 
-require('dotenv').config()
+dotenv.config()
 const client = new Discord.Client();
 let BOT
 const prefix = '!pp'

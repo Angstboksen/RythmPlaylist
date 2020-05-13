@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "Discord bot for saving and playing playlists.",
     "main": "index.js",
+    "type": "module",
     "dependencies": {
         "babel-node": "0.0.1-security",
         "discord.js": "^12.2.0",
@@ -16,7 +17,7 @@
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "babel-node --presets es2015 index.js"
+        "start": "node index.js"
     },
     "repository": {
         "type": "git",
@@ -28,5 +29,10 @@
     "bugs": {
         "url": "https://github.com/Olaussen/RythmPlaylist/issues"
     },
-    "homepage": "https://github.com/Olaussen/RythmPlaylist#readme"
+    "homepage": "https://github.com/Olaussen/RythmPlaylist#readme",
+    "devDependencies": {
+        "@babel/preset-env": "^7.9.6",
+        "babel-jest": "^26.0.1",
+        "jest": "^26.0.1"
+    }
 }
