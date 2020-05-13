@@ -248,7 +248,7 @@ class RythmPlaylist {
             this.queue.playing = true
             const song = this.queue.next()
 
-            const estimatedtime = await this.queue.getEstimatedTime()
+            const estimatedtime = HELPERS.formattedTime(song.length)
 
             const dispatcher = this.connection
                 .play(ytdl(song.url), { filter: 'audioonly' })
@@ -262,7 +262,7 @@ class RythmPlaylist {
                 ":notes: **Tittel: **" + song.title + "\n" +
                 ":beginner: **Youtube link: **" + song.url + "\n" +
                 ":arrows_counterclockwise: **Antall sanger fortsatt i køen:** " + this.queue.size() + "\n" +
-                ":timer: **Beregnet total tid: **" + estimatedtime
+                ":timer: **Beregnet tid: **" + estimatedtime
             let embed = new MessageEmbed()
             embed.setColor("RANDOM")
             embed.setTitle(":arrow_forward: **Hva spilles nå? ** :arrow_forward:")
