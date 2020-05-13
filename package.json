@@ -4,8 +4,9 @@
     "description": "Discord bot for saving and playing playlists.",
     "main": "index.js",
     "dependencies": {
-        "dotenv": "^8.2.0",
+        "babel-node": "0.0.1-security",
         "discord.js": "^12.2.0",
+        "dotenv": "^8.2.0",
         "ffmpeg": "^0.0.4",
         "opusscript": "^0.0.7",
         "ytdl-core": "^2.1.2"
