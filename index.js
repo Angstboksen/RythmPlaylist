@@ -6,7 +6,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 const client = new Discord.Client();
 let BOT
-const prefix = '!pp'
+const prefix = '!'
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);

@@ -24,9 +24,9 @@ class RythmPlaylist {
     execute(message) {
         this.textChannel = message.channel
         this.voiceChannel = message.member.voice.channel
-        let args = message.content.slice(4).split(' ');
+        let args = message.content.split(' ');
         args.map(a => a = a.toLowerCase())
-        const givenCommand = args[0]
+        const givenCommand = args[0].substring(1, args[0].length)
         if (this.commandExists(givenCommand)) {
             const command = this.commands[givenCommand]
             if (!HELPERS.validateCommandLength(args, command.validLength)) {
@@ -287,14 +287,14 @@ class RythmPlaylist {
             this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
         }
         this.textChannel.send(":mage: **Fjernet alle sanger fra køen! ** :pencil2:")
-        this.queue.clear() = []
+        this.queue.clear()
         this.connection.dispatcher.end()
     }
 
     _fetchAllCommands() {
         return {
-            'play': {
-                name: "play",
+            'p': {
+                name: "p",
                 validLength: -1,
                 run: async (message, args) => {
                     try {
@@ -317,7 +317,7 @@ class RythmPlaylist {
                         console.log(e)
                     }
                 },
-                validFormats: "`!pp play <link|search keywords>`",
+                validFormats: "`!p <link|search keywords>`",
                 commandDescriptions: "Will play the given song link, or search with the given keywords"
             },
 
@@ -330,7 +330,7 @@ class RythmPlaylist {
                         this.voiceChannel.join()
                     }
                 },
-                validFormats: "`!pp cum`",
+                validFormats: "`!cum`",
                 commandDescriptions: "Will make the bot join the voice channel. It will not play anything"
             },
 
@@ -343,7 +343,7 @@ class RythmPlaylist {
                         this.voiceChannel.leave()
                     }
                 },
-                validFormats: "`!pp leave`",
+                validFormats: "`!leave`",
                 commandDescriptions: "Will kick the bot from the voice channel"
             },
 
@@ -354,7 +354,7 @@ class RythmPlaylist {
                     const sender = message.member.user.tag
                     this.createNewList(args[1], sender)
                 },
-                validFormats: "`!pp create <name>`",
+                validFormats: "`!create <name>`",
                 commandDescriptions: "Will create a new empty list with the given name"
             },
 
@@ -370,7 +370,7 @@ class RythmPlaylist {
                     }
 
                 },
-                validFormats: "`!pp add <playlist name> <link:search keywords>`",
+                validFormats: "`!add <playlist name> <link:search keywords>`",
                 commandDescriptions: "Will add a song to the given list. The song will be either the given link, or a search for the given keywords"
             },
 
@@ -384,7 +384,7 @@ class RythmPlaylist {
                         this.textChannel.send(":thinking: **Det er ikke måten man legger til en trusted bruker i en liste** :joy: :joy: ")
                     }
                 },
-                validFormats: "`!pp trust <playlist name> <discord tag of user>`",
+                validFormats: "`!trust <playlist name> <discord tag of user>`",
                 commandDescriptions: "Will give editing permissions for the given list to the given user"
             },
 
@@ -392,12 +392,12 @@ class RythmPlaylist {
                 name: "listall",
                 validLength: 1,
                 run: async (message, args) => { await this.listall() },
-                validFormats: "`!pp listall`",
+                validFormats: "`!listall`",
                 commandDescriptions: "Will list all the stored lists with their name, number of songs and creator"
             },
 
-            'playlist': {
-                name: "playlist",
+            'pl': {
+                name: "pl",
                 validLength: 2,
                 run: async (message, args) => {
                     const playlist = args[1]
@@ -408,19 +408,19 @@ class RythmPlaylist {
                         this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
                     }
                 },
-                validFormats: "`!pp playlist <playlist name>`",
+                validFormats: "`!pl <playlist name>`",
                 commandDescriptions: "Will play the given list in chronological order"
 
             },
 
-            'skip': {
-                name: 'skip',
+            's': {
+                name: 's',
                 validLength: 1,
                 run: (message, args) => {
                     const channel = message.member.voice.channel
                     this.skip(channel)
                 },
-                validFormats: "`!pp skip`",
+                validFormats: "`!s`",
                 commandDescriptions: "Will skip to the next song in the queue"
             },
 
@@ -430,18 +430,19 @@ class RythmPlaylist {
                 run: (message, args) => {
                     const channel = message.member.voice.channel
                     this.stop(channel)
+
                 },
-                validFormats: "`!pp stop`",
+                validFormats: "`!stop`",
                 commandDescriptions: "Will stop the bot and clear the queue"
             },
 
-            'queue': {
-                name: 'queue',
+            'q': {
+                name: 'q',
                 validLength: 1,
                 run: (message, args) => {
                     this.showQueue()
                 },
-                validFormats: "`!pp queue`",
+                validFormats: "`!q`",
                 commandDescriptions: "Will show the current queue"
             },
 
@@ -458,7 +459,7 @@ class RythmPlaylist {
                     }
 
                 },
-                validFormats: "`!pp shuffle <playlist name>`",
+                validFormats: "`!shuffle <playlist name>`",
                 commandDescriptions: "Will play the given playlist in shuffle mode"
             },
 
@@ -478,7 +479,7 @@ class RythmPlaylist {
 
 
                 },
-                validFormats: "`!pp commands`",
+                validFormats: "`!commands`",
                 commandDescriptions: "Will give a list over the commands with descriptions"
             }
         }
