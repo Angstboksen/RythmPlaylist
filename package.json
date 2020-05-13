@@ -9,9 +9,7 @@
         "dotenv": "^8.2.0",
         "ffmpeg": "^0.0.4",
         "opusscript": "^0.0.7",
-        "ytdl-core": "^2.1.2"
-    },
-    "devDependencies": {
+        "ytdl-core": "^2.1.2",
         "babel-cli": "^6.26.0",
         "babel-preset-es2015": "^6.24.1",
         "rimraf": "^3.0.2"
