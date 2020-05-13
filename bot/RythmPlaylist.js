@@ -341,6 +341,10 @@ class RythmPlaylist {
                     if (this.alreadyJoined()) {
                         this.textChannel.send(":x: **Aight Imma head out!** :disappointed_relieved: :zipper_mouth:")
                         this.voiceChannel.leave()
+                        this.queue.clear()
+                        this.voiceChannel = undefined
+                        this.textChannel = undefined
+                        this.connection = undefined
                     }
                 },
                 validFormats: "`!leave`",

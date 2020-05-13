@@ -29,6 +29,7 @@ class QueueConstruct {
     }
 
     clear() {
+        this.playing = false
         this.songs = []
     }
     async show() {
