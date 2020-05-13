@@ -263,7 +263,15 @@ class RythmPlaylist {
         this.textChannel.send(msg)
     }
 
-    async startPlaylist(name) {
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array
+    }
+
+    async startPlaylist(name, shuffle = false) {
         const obj = await this._readFile()
         const playlists = obj.playlists
         const playlist = await this.getPlaylistInstance(name, playlists)
@@ -272,7 +280,11 @@ class RythmPlaylist {
             return
         }
         this.connection = await this.voiceChannel.join()
-        this.queue = new QueueConstruct(this.textChannel, this.voiceChannel, this.connection, playlist.songs)
+        let songs = playlist.songs
+        if(shuffle) {
+            songs = this.shuffleArray(songs)
+        }
+        this.queue = new QueueConstruct(this.textChannel, this.voiceChannel, this.connection, songs)
         this.play()
     }
 
@@ -457,6 +469,19 @@ class RythmPlaylist {
                 validLength: 1,
                 run: (message, args) => {
                     this.showQueue()
+                }
+            },
+
+            'shuffle': {
+                name: 'shuffle',
+                validLength: 2,
+                run: async (message, args) => {
+                    const playlist = args[1]
+                    if (await this.playListExists(playlist)) {
+                        this.startPlaylist(playlist, true)
+                    } else {
+                        this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
+                    }
                 }
             }
         }
