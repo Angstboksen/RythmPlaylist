@@ -125,7 +125,7 @@ class RythmPlaylist {
         }
         try {
             const song = await this.search(keywords)
-            if(!song) {
+            if (!song) {
                 this.textChannel.send(":rotating_light: **Fant ingen sanger** :rotating_light:")
             }
             if (!instance.trustedusers.includes(user.replace(/\s+/g, ''))) {
@@ -226,7 +226,7 @@ class RythmPlaylist {
         const searcher = new YoutubeSearcher()
         const keyword = args.join()
         const url = await searcher.search(keyword)
-        if(!url) {
+        if (!url) {
             this.textChannel.send(":x: **Fant ingen videoer** :x:")
             return undefined
         }
@@ -287,7 +287,7 @@ class RythmPlaylist {
             this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
         }
         this.textChannel.send(":mage: **Fjernet alle sanger fra køen! ** :pencil2:")
-        this.queue.songs = []
+        this.queue.clear() = []
         this.connection.dispatcher.end()
     }
 
@@ -302,7 +302,7 @@ class RythmPlaylist {
                             this.textChannel.send(":x: **Du må spesifisere hva som skal avspilles mannen!** :x:")
                         }
                         const filtered = await this.search(args.slice(1, args.length))
-                        if(!filtered) {
+                        if (!filtered) {
                             return
                         }
                         if (this.queue && this.queue.playing) {
@@ -314,9 +314,11 @@ class RythmPlaylist {
                         this.play();
 
                     } catch (e) {
-                       console.log(e)
+                        console.log(e)
                     }
-                }
+                },
+                validFormats: "`!pp play <link|search keywords>`",
+                commandDescriptions: "Will play the given song link, or search with the given keywords"
             },
 
             'cum': {
@@ -327,7 +329,9 @@ class RythmPlaylist {
                         this.textChannel.send(":kissing_heart: **Okei her kommer jeg** :heart_eyes:")
                         this.voiceChannel.join()
                     }
-                }
+                },
+                validFormats: "`!pp cum`",
+                commandDescriptions: "Will make the bot join the voice channel. It will not play anything"
             },
 
             'leave': {
@@ -338,7 +342,9 @@ class RythmPlaylist {
                         this.textChannel.send(":x: **Aight Imma head out!** :disappointed_relieved: :zipper_mouth:")
                         this.voiceChannel.leave()
                     }
-                }
+                },
+                validFormats: "`!pp leave`",
+                commandDescriptions: "Will kick the bot from the voice channel"
             },
 
             'create': {
@@ -347,7 +353,9 @@ class RythmPlaylist {
                 run: async (message, args) => {
                     const sender = message.member.user.tag
                     this.createNewList(args[1], sender)
-                }
+                },
+                validFormats: "`!pp create <name>`",
+                commandDescriptions: "Will create a new empty list with the given name"
             },
 
             'add': {
@@ -361,7 +369,9 @@ class RythmPlaylist {
                         this.textChannel.send(":thinking: **Det er ikke måten man legger til en sang i en liste på** :joy: :joy: ")
                     }
 
-                }
+                },
+                validFormats: "`!pp add <playlist name> <link:search keywords>`",
+                commandDescriptions: "Will add a song to the given list. The song will be either the given link, or a search for the given keywords"
             },
 
             'trust': {
@@ -373,13 +383,17 @@ class RythmPlaylist {
                     } else {
                         this.textChannel.send(":thinking: **Det er ikke måten man legger til en trusted bruker i en liste** :joy: :joy: ")
                     }
-                }
+                },
+                validFormats: "`!pp trust <playlist name> <discord tag of user>`",
+                commandDescriptions: "Will give editing permissions for the given list to the given user"
             },
 
             'listall': {
                 name: "listall",
                 validLength: 1,
-                run: async (message, args) => { await this.listall() }
+                run: async (message, args) => { await this.listall() },
+                validFormats: "`!pp listall`",
+                commandDescriptions: "Will list all the stored lists with their name, number of songs and creator"
             },
 
             'playlist': {
@@ -393,7 +407,9 @@ class RythmPlaylist {
                     } else {
                         this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
                     }
-                }
+                },
+                validFormats: "`!pp playlist <playlist name>`",
+                commandDescriptions: "Will play the given list in chronological order"
 
             },
 
@@ -403,7 +419,9 @@ class RythmPlaylist {
                 run: (message, args) => {
                     const channel = message.member.voice.channel
                     this.skip(channel)
-                }
+                },
+                validFormats: "`!pp skip`",
+                commandDescriptions: "Will skip to the next song in the queue"
             },
 
             'stop': {
@@ -412,7 +430,9 @@ class RythmPlaylist {
                 run: (message, args) => {
                     const channel = message.member.voice.channel
                     this.stop(channel)
-                }
+                },
+                validFormats: "`!pp stop`",
+                commandDescriptions: "Will stop the bot and clear the queue"
             },
 
             'queue': {
@@ -420,7 +440,9 @@ class RythmPlaylist {
                 validLength: 1,
                 run: (message, args) => {
                     this.showQueue()
-                }
+                },
+                validFormats: "`!pp queue`",
+                commandDescriptions: "Will show the current queue"
             },
 
             'shuffle': {
@@ -435,7 +457,29 @@ class RythmPlaylist {
                         this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
                     }
 
-                }
+                },
+                validFormats: "`!pp shuffle <playlist name>`",
+                commandDescriptions: "Will play the given playlist in shuffle mode"
+            },
+
+            'commands': {
+                name: 'commands',
+                validLength: 1,
+                run: (message, args) => {
+                    let embed = new MessageEmbed()
+                    embed.setTitle("**:scroll: The list of valid commands :scroll:**")
+                    let text = ""
+                    for (let command of this.getCommandList()) {
+                        const c = this.commands[command]
+                        text += c.validFormats + "\n **" + c.commandDescriptions + "** \n \n"
+                    }
+                    embed.setDescription(text)
+                    this.textChannel.send(embed)
+
+
+                },
+                validFormats: "`!pp commands`",
+                commandDescriptions: "Will give a list over the commands with descriptions"
             }
         }
     }

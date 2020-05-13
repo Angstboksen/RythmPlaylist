@@ -28,6 +28,9 @@ class QueueConstruct {
         this.songs.shift()
     }
 
+    clear() {
+        this.songs = []
+    }
     async show() {
         let embed = new MessageEmbed()
         let text = ""
