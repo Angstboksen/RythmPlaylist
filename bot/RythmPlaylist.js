@@ -1,9 +1,10 @@
-import QueueConstruct from './QueueConstruct.js'
 import ytdl from 'ytdl-core'
 import fs from 'fs'
+import QueueConstruct from './QueueConstruct.js'
+import Song from './Song.js'
 import { MessageEmbed } from 'discord.js'
-
-const ytRegex = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/
+import Playlist from './Playlist.js'
+import HELPERS from './helpers.js'
 
 class RythmPlaylist {
 
@@ -27,7 +28,7 @@ class RythmPlaylist {
         const givenCommand = args[0]
         if (this.commandExists(givenCommand)) {
             const command = this.commands[givenCommand]
-            if (!this.validateCommandLength(args, command.validLength)) {
+            if (!HELPERS.validateCommandLength(args, command.validLength)) {
                 this.writeTullekopp()
                 return
             }
@@ -49,17 +50,6 @@ class RythmPlaylist {
         return this.getCommandList().includes(command)
     }
 
-    executeCommand(command) {
-        this.commands[command].run
-    }
-
-    validateCommandLength(args, length) {
-        if (args.length !== length) {
-            return false
-        }
-        return true
-    }
-
     alreadyJoined() {
         for (let user of this.voiceChannel.members) {
             if (user[0] === process.env.BOT_ID) {
@@ -67,17 +57,6 @@ class RythmPlaylist {
             }
         }
         return false
-    }
-
-    async playListExists(name) {
-        const obj = await this._readFile()
-        for (let playlist of obj.playlists) {
-            if (playlist.name === name) {
-                return true
-            }
-        }
-        return false
-
     }
 
     async _writeToFile(obj) {
@@ -113,16 +92,12 @@ class RythmPlaylist {
         }
         const obj = await this._readFile()
         if (obj) {
-            const exists = await this.playListExists(name.toLowerCase())
+            const exists = HELPERS.playListExists(name.toLowerCase(), obj)
             if (exists) {
                 saved = false
             } else {
-                obj.playlists.push({
-                    name: name,
-                    songs: [],
-                    creator: sender,
-                    trustedusers: [sender]
-                })
+                const newList = new Playlist(name, [], sender, [sender])
+                obj.playlists.push(newList)
                 saved = this._writeToFile(obj);
             }
         }
@@ -133,94 +108,66 @@ class RythmPlaylist {
     async validateAddCredentials(args) {
         const playlistname = args[1]
         const url = args[2]
-        return await this.playListExists(playlistname) && this.matchYoutubeUrl(url)
-    }
-
-    matchYoutubeUrl(url) {
-        return url.match(ytRegex)
-    }
-
-    getPlaylistInstance(name, list) {
-        for (let playlist of list) {
-            if (playlist.name === name) {
-                return playlist
-            }
-        }
-        return undefined
-    }
-
-    youtubeify(url) {
-        return "https://www.youtube.com/watch?v=" + url
+        const obj = await this._readFile()
+        return HELPERS.playListExists(playlistname, obj) && HELPERS.matchYoutubeUrl(url)
     }
 
     async addSongToList(args, user) {
         const playlistname = args[1]
         const obj = await this._readFile()
         const playlists = obj.playlists
-        let instance = this.getPlaylistInstance(playlistname, playlists)
+        let instance = HELPERS.getPlaylistInstance(playlistname, playlists)
         if (!instance) {
             this.textChannel.send(":rotating_light: :scroll: **Listen finnes ikke** :scroll: :rotating_light:")
             return
         }
-        let url = args[2].match(ytRegex)
+        let url = args[2].match(HELPERS.ytRegex)
         if (!url) {
             this.textChannel.send(":rotating_light: **Ugyldig link** :rotating_light:")
             return
         }
         url = url[0]
-        const song = await ytdl.getInfo(url)
-        const filtered = {
-            title: song.title,
-            length: parseInt(song.length_seconds),
-            url: song.video_url,
-        }
-        if (!instance.trustedusers.includes(user.replace(/\s+/g, ''))) {
-            this.textChannel.send(":police_car: :cop: **Du har ikke lov til å endre denne listen** :scroll: :rotating_light:")
-            return
-        }
-        let exists = false
-        for (let s of instance.songs) {
-            if (s.url === filtered.url) {
-                exists = true
+        try {
+            const song = await ytdl.getInfo(url)
+            const filtered = new Song(song.video_url, song.title, parseInt(song.length_seconds))
+            if (!instance.trustedusers.includes(user.replace(/\s+/g, ''))) {
+                this.textChannel.send(":police_car: :cop: **Du har ikke lov til å endre denne listen** :scroll: :rotating_light:")
+                return
             }
-        }
-        if (!exists) {
-            instance.songs.push(filtered)
-            this.textChannel.send(":white_check_mark: **La til url: **" + "`" + args[2] + "` **i listen** :scroll:")
-            this._writeToFile(obj)
-            this.enqueue(filtered)
-        } else {
-            this.textChannel.send(":rotating_light: **Sangen finnes allerede i listen!** :rotating_light:")
+            let exists = instance.hasSong(filtered.url)
+            if (!exists) {
+                instance.songs.push(filtered)
+                this.textChannel.send(":white_check_mark: **La til: **" + "`" + filtered.title + "` **i listen** :scroll:")
+                this._writeToFile(obj)
+                this.enqueue(filtered)
+
+            } else {
+                this.textChannel.send(":rotating_light: **Sangen finnes allerede i listen!** :rotating_light:")
+            }
+        } catch (e) {
+            this.textChannel.send(":rotating_light: **Denne linken finnes ikke** :rotating_light:")
         }
     }
 
     enqueue(song) {
         if (this.queue) {
             this.queue.enqueue(song)
-            this.showQueue()
+            if (this.queue.playing) {
+                this.showQueue()
+            }
         }
     }
 
-    showQueue() {
-        let embed = new MessageEmbed()
-        let text = ""
-        let count = 0
-        for (let song of this.queue.songs) {
-            count++
-            text += "**" + count + ")** :notes: **Tittel: **" + song.title + "\n"
-        }
-        let title = count === 0 ? ":scroll: **Køen er tom!** :scroll:" :
-            ":scroll: **Slik ser køen ut** :scroll: | **Antall sanger: **" + this.queue.size()
-        embed.setTitle(title)
-        embed.setDescription(text)
-        this.textChannel.send(embed)
+    async showQueue() {
+        this.textChannel.send(await this.queue.show())
     }
 
-    validateTrustCredentials(args) {
+    async validateTrustCredentials(args) {
         const playlistname = args[1]
         const user = args[2]
         const regex = /[A-z](.*)#(\d{4})/
-        return this.playListExists(playlistname) && user.match(regex)
+        const obj = await this._readFile()
+        return HELPERS.playListExists(playlistname, obj) && user.match(regex)
     }
 
     async trustUser(message, args) {
@@ -234,7 +181,7 @@ class RythmPlaylist {
 
         const obj = await this._readFile()
         const playlists = obj.playlists
-        let instance = this.getPlaylistInstance(playlistname, playlists)
+        let instance = HELPERS.getPlaylistInstance(playlistname, playlists)
         if (!instance) {
             this.textChannel.send(":rotating_light: :scroll: **Listen finnes ikke** :scroll: :rotating_light:")
             return
@@ -243,7 +190,7 @@ class RythmPlaylist {
             message.channel.send(":police_car: :cop: **Dette er jo ikke din liste** :scroll: :rotating_light:")
             return
         }
-        instance.trustedusers.push(trusted)
+        instance.addTrustedUser(trusted)
         this.textChannel.send(":white_check_mark: **Du stoler på at: **" + "`" + trusted + "` **ikke fucker opp listen din** :scroll:")
         this._writeToFile(obj)
     }
@@ -263,27 +210,16 @@ class RythmPlaylist {
         this.textChannel.send(msg)
     }
 
-    shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array
-    }
-
     async startPlaylist(name, shuffle = false) {
         const obj = await this._readFile()
         const playlists = obj.playlists
-        const playlist = await this.getPlaylistInstance(name, playlists)
-        if (playlist.songs.length <= 0) {
+        const playlist = HELPERS.getPlaylistInstance(name, playlists)
+        if (playlist.size() <= 0) {
             this.textChannel.send(":clown: **Spillelisten: **" + "`" + name + "` **har ingen sanger** :clown:")
             return
         }
         this.connection = await this.voiceChannel.join()
-        let songs = playlist.songs
-        if(shuffle) {
-            songs = this.shuffleArray(songs)
-        }
+        let songs = playlist.getSongs(shuffle)
         this.queue = new QueueConstruct(this.textChannel, this.voiceChannel, this.connection, songs)
         this.play()
     }
@@ -352,11 +288,7 @@ class RythmPlaylist {
                     try {
                         this.connection = await this.voiceChannel.join();
                         const song = await ytdl.getInfo(args[1])
-                        const filtered = {
-                            title: song.title,
-                            url: song.video_url,
-                            length: parseInt(song.length_seconds)
-                        }
+                        const filtered = new Song(song.title, song.video_url, parseInt(song.length_seconds))
                         if (this.queue && this.queue.playing) {
                             this.enqueue(filtered)
                             return
@@ -418,8 +350,8 @@ class RythmPlaylist {
             'trust': {
                 name: "trust",
                 validLength: 3,
-                run: (message, args) => {
-                    if (this.validateTrustCredentials(args)) {
+                run: async (message, args) => {
+                    if (await this.validateTrustCredentials(args)) {
                         this.trustUser(message, args)
                     } else {
                         this.textChannel.send(":thinking: **Det er ikke måten man legger til en trusted bruker i en liste** :joy: :joy: ")
@@ -438,12 +370,14 @@ class RythmPlaylist {
                 validLength: 2,
                 run: async (message, args) => {
                     const playlist = args[1]
-                    if (await this.playListExists(playlist)) {
+                    const obj = await this._readFile()
+                    if (HELPERS.playListExists(playlist, obj)) {
                         this.startPlaylist(playlist)
                     } else {
                         this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
                     }
                 }
+
             },
 
             'skip': {
@@ -477,15 +411,19 @@ class RythmPlaylist {
                 validLength: 2,
                 run: async (message, args) => {
                     const playlist = args[1]
-                    if (await this.playListExists(playlist)) {
+                    const obj = await this._readFile()
+                    if (HELPERS.playListExists(playlist, obj)) {
                         this.startPlaylist(playlist, true)
                     } else {
                         this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
                     }
+
                 }
             }
         }
     }
 }
+
+
 
 export default RythmPlaylist

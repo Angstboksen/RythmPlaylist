@@ -1,4 +1,5 @@
-import ytdl from 'ytdl-core'
+import HELPERS from './helpers.js'
+import { MessageEmbed } from 'discord.js'
 
 class QueueConstruct {
 
@@ -27,22 +28,29 @@ class QueueConstruct {
         this.songs.shift()
     }
 
+    async show() {
+        let embed = new MessageEmbed()
+        let text = ""
+        let count = 0
+        for (let song of this.songs) {
+            count++
+            text += "**" + count + ")** :notes: **Tittel: **" + song.title + "\n"
+        }
+        text += "\n :timer: **Beregnet total tid: ** " + await this.getEstimatedTime()
+        let title = count === 0 ? ":scroll: **Køen er tom!** :scroll:" :
+            ":scroll: **Slik ser køen ut** :scroll: | **Antall sanger: **" + this.size()
+        embed.setTitle(title)
+        embed.setDescription(text)
+
+        return embed
+    }
+
     async getEstimatedTime() {
         let totalSeconds = 0
         for (let song of this.songs) {
             totalSeconds += song.length
         }
-        let hours = totalSeconds < 3600 ? "" : Math.floor(totalSeconds / 3600)
-        hours = hours === "" ? hours : "0" + hours + ":"
-
-        let minutes = totalSeconds < 60 ? "0" : Math.floor(totalSeconds / 60)
-        minutes = minutes === 0 || minutes < 10 ? "0" + minutes: minutes
-
-        let seconds = totalSeconds % 60
-        seconds = seconds === 0 || seconds < 10 ? "0" + seconds: seconds
-
-        let formatted = hours + minutes + ':' + seconds
-        return formatted
+        return HELPERS.formattedTime(totalSeconds)
     }
 }
 
