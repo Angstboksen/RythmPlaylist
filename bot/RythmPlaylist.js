@@ -97,7 +97,7 @@ class RythmPlaylist {
             if (exists) {
                 saved = false
             } else {
-                const newList = new Playlist(name, [], sender.id, [sender.id])
+                const newList = new Playlist(name, [], sender.user.tag, [sender.id])
                 obj.playlists.push(newList)
                 saved = this._writeToFile(obj);
             }
@@ -189,7 +189,7 @@ class RythmPlaylist {
             return
         }
         instance.addTrustedUser(trusted)
-        this.textChannel.send(":white_check_mark: **Du stoler på at: **" +  trusted + " **ikke fucker opp listen din** :scroll:")
+        this.textChannel.send(":white_check_mark: **Du stoler på at: **" + trusted + " **ikke fucker opp listen din** :scroll:")
         this._writeToFile(obj)
     }
 
@@ -224,13 +224,13 @@ class RythmPlaylist {
 
     async search(args) {
         let song = undefined
-        if(args.length === 1 && ytdl.validateURL(args[0])) {
+        if (args.length === 1 && ytdl.validateURL(args[0])) {
             const obj = await ytdl.getBasicInfo(args[0])
-            if(obj) {
+            if (obj) {
                 song = new Song(obj.video_url, obj.title, parseInt(obj.length_seconds))
                 return song
-            } 
-        } 
+            }
+        }
 
         const searcher = new YoutubeSearcher()
         const keyword = args.join('')
@@ -295,6 +295,73 @@ class RythmPlaylist {
         this.textChannel.send(":mage: **Fjernet alle sanger fra køen! ** :pencil2:")
         this.queue.clear()
         this.connection.dispatcher.end()
+    }
+
+    async displayList(listname) {
+        const obj = await this._readFile()
+        const instance = HELPERS.getPlaylistInstance(listname, obj.playlists)
+        if (!instance) {
+            this.textChannel.send(":x: **Ingen liste** " + "`" + listname + "`" + " **eksisterer** :x:")
+            return
+        }
+        let text = ""
+        let count = 0
+        let embed = new MessageEmbed()
+        embed.setTitle(":scroll: **Her er sangene i listen: ** `" + instance.name + "` :scroll:")
+        for (let song of instance.songs) {
+            count++
+            text += "**" + count + ") :notes: Title: **" + song.title + "\n"
+        }
+        text += "\n **Owner: ** `" + instance.creator + "`"
+        embed.setDescription(text)
+        this.textChannel.send(embed)
+
+    }
+
+    async deleteSong(user, args) {
+        const listname = args[0]
+        const index = parseInt(args[1])
+        const obj = await this._readFile()
+        const instance = HELPERS.getPlaylistInstance(listname, obj.playlists)
+        if (!instance) {
+            this.textChannel.send(":x: **Ingen liste** " + "`" + listname + "`" + " **eksisterer** :x:")
+            return
+        }
+        if (!Number.isInteger(index) || index < 1 || index > instance.songs.length) {
+            this.textChannel.send(":x: **Argument nr. 2 må være en gyldig index** :x:")
+            return
+        }
+        if (!instance.trustedusers.includes(user)) {
+            this.textChannel.send(":police_car: :cop: **Du har ikke lov til å endre denne listen** :scroll: :rotating_light:")
+            return
+        }
+        instance.songs.splice(index - 1, 1)
+        this._writeToFile(obj)
+        this.textChannel.send(":mage: **Fjernet sang nr. **" + index + " **fra listen :scoll:")
+    }
+
+    async deleteList(user, args) {
+        const listname = args
+        const obj = await this._readFile()
+        const instance = HELPERS.getPlaylistInstance(listname, obj.playlists)
+        if (!instance) {
+            this.textChannel.send(":x: **Ingen liste** " + "`" + listname + "`" + " **eksisterer** :x:")
+            return
+        }
+        if (!instance.trustedusers.includes(user)) {
+            this.textChannel.send(":police_car: :cop: **Du har ikke lov til å endre denne listen** :scroll: :rotating_light:")
+            return
+        }
+        let count = 0
+        for (let list of obj.playlists) {
+            if (list.name === listname) {
+                obj.playlists.splice(count, 1)
+                this._writeToFile(obj)
+                this.textChannel.send(":mage: **Fjernet listen: ** `" + listname + "` :scroll:")
+                return
+            }
+            count++
+        }
     }
 
     _fetchAllCommands() {
@@ -491,6 +558,33 @@ class RythmPlaylist {
                 },
                 validFormats: "`!commands`",
                 commandDescriptions: "Will give a list over the commands with descriptions"
+            },
+            'list': {
+                name: 'list',
+                validLength: 2,
+                run: (message, args) => {
+                    this.displayList(args[1])
+                },
+                validFormats: "`!list <listname>`",
+                commandDescriptions: "Will give overview over the songs in the given list"
+            },
+            'delsong': {
+                name: 'delsong',
+                validLength: 3,
+                run: (message, args) => {
+                    this.deleteSong(message.member.id, args.slice(1, args.length))
+                },
+                validFormats: "`!delsong <listname> <index of song>`",
+                commandDescriptions: "Will delete the song at the given index in the list. "
+            },
+            'dellist': {
+                name: 'dellist',
+                validLength: 2,
+                run: (message, args) => {
+                    this.deleteList(message.member.id, args[1])
+                },
+                validFormats: "`!dellist <listname>`",
+                commandDescriptions: "Will delete the given list entirely. "
             }
         }
     }
