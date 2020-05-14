@@ -21,7 +21,9 @@ class Playlist {
     addTrustedUser(user) {
         if (!this.trustedusers.includes(user)) {
             this.trustedusers.push(user)
+            return true
         }
+        return false
     }
 
     getSongs(shuffle) {

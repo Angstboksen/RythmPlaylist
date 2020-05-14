@@ -97,7 +97,7 @@ class RythmPlaylist {
             if (exists) {
                 saved = false
             } else {
-                const newList = new Playlist(name, [], sender.user.tag, [sender.id])
+                const newList = new Playlist(name, [], sender.id, [sender.id])
                 obj.playlists.push(newList)
                 saved = this._writeToFile(obj);
             }
@@ -170,8 +170,11 @@ class RythmPlaylist {
     async trustUser(message, args) {
         const admin = message.member.id
         const playlistname = args[1]
-        const trusted = args[2].match(HELPERS.userRegex)[0]
-        console.log()
+        let trusted = args[2].match(HELPERS.userRegex)
+        if (!trusted) {
+            return
+        }
+        trusted = trusted[1]
         if (admin === trusted) {
             this.textChannel.send(":thinking: **Du stoler brått allerede på deg selv, eller?** :thinking:")
             return
@@ -188,9 +191,11 @@ class RythmPlaylist {
             message.channel.send(":police_car: :cop: **Dette er jo ikke din liste** :scroll: :rotating_light:")
             return
         }
-        instance.addTrustedUser(trusted)
-        this.textChannel.send(":white_check_mark: **Du stoler på at: **" + trusted + " **ikke fucker opp listen din** :scroll:")
-        this._writeToFile(obj)
+        const added = instance.addTrustedUser(trusted)
+        if (added) {
+            this.textChannel.send(":white_check_mark: **Du stoler på at: ** <@!" + trusted + "> **ikke fucker opp listen din** :scroll:")
+            this._writeToFile(obj)
+        }
     }
 
     async listall() {
@@ -200,7 +205,7 @@ class RythmPlaylist {
         for (let list of obj.playlists) {
             count++
             const amount = list.songs.length
-            msg += ":printer: **Liste: **" + "`" + list.name + "`" + " | **Antall sanger:** " + "`" + amount + "`" + " | **Administrator:** " + "`" + list.creator + "` :scroll: \n"
+            msg += ":printer: **Liste: **" + "`" + list.name + "`" + " | **Antall sanger:** " + "`" + amount + "`" + " | **Administrator:** " + "<@!" + list.creator + "> :scroll: \n"
         }
         if (count === 0) {
             msg = ":clown: **Fant ingen lister :rolling_eyes: Du kan lage en ny en ved å bruke: **" + "`!pp create <navn_på_liste>`"
@@ -312,7 +317,11 @@ class RythmPlaylist {
             count++
             text += "**" + count + ") :notes: Title: **" + song.title + "\n"
         }
-        text += "\n **Owner: ** `" + instance.creator + "`"
+        text += "\n **Owner: ** \n <@!" + instance.creator + ">"
+        text += "\n **Trusted users: ** \n"
+        for(let trusted of instance.trustedusers) {
+            text += "<@!" + trusted + ">  "
+        }
         embed.setDescription(text)
         this.textChannel.send(embed)
 
@@ -337,7 +346,7 @@ class RythmPlaylist {
         }
         instance.songs.splice(index - 1, 1)
         this._writeToFile(obj)
-        this.textChannel.send(":mage: **Fjernet sang nr. **" + index + " **fra listen :scoll:")
+        this.textChannel.send(":mage: **Fjernet sang nr. **" + index + " **fra listen** :scroll:")
     }
 
     async deleteList(user, args) {
@@ -461,7 +470,7 @@ class RythmPlaylist {
                         this.textChannel.send(":thinking: **Det er ikke måten man legger til en trusted bruker i en liste** :joy: :joy: ")
                     }
                 },
-                validFormats: "`!trust <playlist name> <discord tag of user>`",
+                validFormats: "`!trust <playlist name> <@user>`",
                 commandDescriptions: "Will give editing permissions for the given list to the given user"
             },
 
