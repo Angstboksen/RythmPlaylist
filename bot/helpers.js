@@ -3,6 +3,8 @@ import Playlist from './Playlist.js'
 
 const ytRegex = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/
 
+const userRegex = /<@!(\d+)>/
+
 function validateCommandLength(args, length) {
     if (length == -1) {
         return true
@@ -54,6 +56,7 @@ function formattedTime(totalSeconds) {
 }
 const HELPERS = {
     ytRegex: ytRegex,
+    userRegex : userRegex,
     validateCommandLength: validateCommandLength,
     matchYoutubeUrl: matchYoutubeUrl,
     youtubeify: youtubeify,

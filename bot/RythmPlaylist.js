@@ -97,12 +97,12 @@ class RythmPlaylist {
             if (exists) {
                 saved = false
             } else {
-                const newList = new Playlist(name, [], sender, [sender])
+                const newList = new Playlist(name, [], sender.id, [sender.id])
                 obj.playlists.push(newList)
                 saved = this._writeToFile(obj);
             }
         }
-        saved ? this.textChannel.send(":white_check_mark: **Mekka ny liste til deg ladden: ** `" + name + "` - **Administrator:** `" + sender + "`")
+        saved ? this.textChannel.send(":white_check_mark: **Mekka ny liste til deg ladden: ** `" + name + "` - **Administrator:** `" + sender.user.tag + "`")
             : this.textChannel.send(":x: **Kunne ikke mekke ny liste med navn: ** `" + name + "`")
     }
 
@@ -128,7 +128,7 @@ class RythmPlaylist {
             if (!song) {
                 this.textChannel.send(":rotating_light: **Fant ingen sanger** :rotating_light:")
             }
-            if (!instance.trustedusers.includes(user.replace(/\s+/g, ''))) {
+            if (!instance.trustedusers.includes(user.id)) {
                 this.textChannel.send(":police_car: :cop: **Du har ikke lov til å endre denne listen** :scroll: :rotating_light:")
                 return
             }
@@ -163,15 +163,15 @@ class RythmPlaylist {
     async validateTrustCredentials(args) {
         const playlistname = args[1]
         const user = args[2]
-        const regex = /[A-z](.*)#(\d{4})/
         const obj = await this._readFile()
-        return HELPERS.playListExists(playlistname, obj) && user.match(regex)
+        return HELPERS.playListExists(playlistname, obj) && user.match(HELPERS.userRegex)[1]
     }
 
     async trustUser(message, args) {
-        const admin = message.member.user.tag
+        const admin = message.member.id
         const playlistname = args[1]
-        const trusted = args[2]
+        const trusted = args[2].match(HELPERS.userRegex)[0]
+        console.log()
         if (admin === trusted) {
             this.textChannel.send(":thinking: **Du stoler brått allerede på deg selv, eller?** :thinking:")
             return
@@ -189,7 +189,7 @@ class RythmPlaylist {
             return
         }
         instance.addTrustedUser(trusted)
-        this.textChannel.send(":white_check_mark: **Du stoler på at: **" + "`" + trusted + "` **ikke fucker opp listen din** :scroll:")
+        this.textChannel.send(":white_check_mark: **Du stoler på at: **" +  trusted + " **ikke fucker opp listen din** :scroll:")
         this._writeToFile(obj)
     }
 
@@ -223,17 +223,23 @@ class RythmPlaylist {
     }
 
     async search(args) {
+        let song = undefined
+        if(args.length === 1 && ytdl.validateURL(args[0])) {
+            const obj = await ytdl.getBasicInfo(args[0])
+            if(obj) {
+                song = new Song(obj.video_url, obj.title, parseInt(obj.length_seconds))
+                return song
+            } 
+        } 
+
         const searcher = new YoutubeSearcher()
-        const keyword = args.join()
-        const url = await searcher.search(keyword)
-        if (!url) {
+        const keyword = args.join('')
+        song = await searcher.search(keyword)
+        if (!song) {
             this.textChannel.send(":x: **Fant ingen videoer** :x:")
             return undefined
         }
-        const song = await ytdl.getInfo(url)
-        const filtered = new Song(song.video_url, song.title, parseInt(song.length_seconds))
-        return filtered
-
+        return song
     }
 
     async play() {
@@ -355,7 +361,7 @@ class RythmPlaylist {
                 name: "create",
                 validLength: 2,
                 run: async (message, args) => {
-                    const sender = message.member.user.tag
+                    const sender = message.member
                     this.createNewList(args[1], sender)
                 },
                 validFormats: "`!create <name>`",
@@ -367,7 +373,7 @@ class RythmPlaylist {
                 validLength: -1,
                 run: (message, args) => {
                     if (this.validateAddCredentials(args)) {
-                        const user = message.member.user.tag
+                        const user = message.member
                         this.addSongToList(args, user)
                     } else {
                         this.textChannel.send(":thinking: **Det er ikke måten man legger til en sang i en liste på** :joy: :joy: ")

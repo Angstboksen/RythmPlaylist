@@ -10,7 +10,7 @@
         "ffmpeg": "^0.0.4",
         "opusscript": "^0.0.7",
         "rimraf": "^3.0.2",
-        "suchtube": "^0.5.6",
+        "yt-search": "^1.1.2",
         "ytdl-core": "^2.1.2"
     },
     "scripts": {
