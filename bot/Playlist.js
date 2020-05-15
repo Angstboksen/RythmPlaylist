@@ -1,3 +1,4 @@
+import HELPERS from "./helpers.js"
 
 class Playlist {
 
@@ -32,13 +33,7 @@ class Playlist {
 
     shuffle() {
         let temp = [].concat(this.songs)
-        for (let i = temp.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * i)
-            const a = temp[i]
-            temp[i] = temp[j]
-            temp[j] = a
-        }
-        return temp
+        return HELPERS.shuffleArray(temp)
     }
 
     size() {

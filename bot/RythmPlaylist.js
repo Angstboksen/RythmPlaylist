@@ -426,12 +426,7 @@ class RythmPlaylist {
             }
         }
         let championlist = new Championlist()
-        for (let i = users.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * i)
-            const a = users[i]
-            users[i] = users[j]
-            users[j] = a
-        }
+        users = HELPERS.shuffleArray(users)
         let champs = championlist.getRandomChampionList(users.length)
         let count = 0
         let embed = new MessageEmbed()

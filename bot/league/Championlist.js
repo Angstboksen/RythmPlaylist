@@ -1,11 +1,12 @@
 import champions from './champions.js'
 import Champion from './Champion.js'
+import HELPERS from '../helpers.js'
 
 class Championlist {
 
     constructor() {
         this.all = this.parseChamps()
-        this.lanes = ["Toplane", "Jungle", "Midlane", "Botlane", "Support"]
+        this.lanes = HELPERS.shuffleArray(["Toplane", "Jungle", "Midlane", "Botlane", "Support"])
         this.created = null
     }
 

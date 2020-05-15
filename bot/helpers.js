@@ -54,6 +54,17 @@ function formattedTime(totalSeconds) {
     let formatted = hours + minutes + ':' + seconds
     return formatted
 }
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * i)
+        const a = array[i]
+        array[i] = array[j]
+        array[j] = a
+    }
+    return array
+}
+
 const HELPERS = {
     ytRegex: ytRegex,
     userRegex : userRegex,
@@ -62,7 +73,8 @@ const HELPERS = {
     youtubeify: youtubeify,
     getPlaylistInstance: getPlaylistInstance,
     playListExists: playListExists,
-    formattedTime: formattedTime
+    formattedTime: formattedTime,
+    shuffleArray: shuffleArray
 
 }
 
