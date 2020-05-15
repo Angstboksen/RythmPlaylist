@@ -2,10 +2,11 @@ import ytdl from 'ytdl-core'
 import fs from 'fs'
 import QueueConstruct from './QueueConstruct.js'
 import Song from './Song.js'
-import { MessageEmbed, Message } from 'discord.js'
 import Playlist from './Playlist.js'
 import HELPERS from './helpers.js'
 import YoutubeSearcher from './YoutubeSearcher.js'
+import Championlist from './league/Championlist.js'
+import { MessageEmbed } from 'discord.js'
 
 class RythmPlaylist {
 
@@ -258,9 +259,7 @@ class RythmPlaylist {
         try {
             this.queue.playing = true
             const song = this.queue.next()
-
             const estimatedtime = HELPERS.formattedTime(song.length)
-
             const dispatcher = this.connection
                 .play(ytdl(song.url), { filter: 'audioonly' })
                 .on("finish", () => {
@@ -417,6 +416,37 @@ class RythmPlaylist {
         }
     }
 
+    initLeagueGame() {
+        let users = []
+        let amount = 0
+        for(let user of this.voiceChannel.members) {
+            if(!user.bot) {
+                amount++
+                users.push(user[0])
+            }
+        }
+        let championlist = new Championlist()
+        for (let i = users.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * i)
+            const a = users[i]
+            users[i] = users[j]
+            users[j] = a
+        }
+        let champs = championlist.getRandomChampionList(users.length)
+        let count = 0
+        let embed = new MessageEmbed()
+        let text = ""
+        for(let champ of champs) {
+            champ.user = users[count]
+            text += ":monkey_face: <@!" + champ.user + "> **har fått æren av å spille: **`" + champ.name + ", " + champ.title + "` **i **`" + champ.lane + "` \n \n" 
+            count++
+        }
+        embed.setTitle(":video_game: **Nytt league game sa du???** :video_game:")
+        embed.setImage('http://www.pngmart.com/files/3/League-of-Legends-Logo-Transparent-Background.png')
+        embed.setDescription(text)
+        this.textChannel.send(embed)
+    }
+
     _fetchAllCommands() {
         return {
             'p': {
@@ -475,7 +505,6 @@ class RythmPlaylist {
                     } else {
                         this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
                     }
-
                 },
                 validFormats: "`!shuffle <playlist name>`",
                 commandDescriptions: "Will play the given playlist in shuffle mode"
@@ -668,12 +697,20 @@ class RythmPlaylist {
                     }
                     embed.setDescription(text)
                     this.textChannel.send(embed)
-
-
                 },
                 validFormats: "`!commands`",
                 commandDescriptions: "Will give a list over the commands with descriptions"
             },
+
+            'league': {
+                name: 'commands',
+                validLength: 1,
+                run: (message, args) => {
+                    this.initLeagueGame()
+                },
+                validFormats: "`!league`",
+                commandDescriptions: "Will randomize champions and lanes for up to 5 if the users in a voice channel"
+            }
         }
     }
 }
