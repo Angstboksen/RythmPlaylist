@@ -201,8 +201,8 @@ class RythmPlaylist {
     async listall() {
         const obj = await this._readFile() 
         let embed = new MessageEmbed()
-        embed.setTitle(":scroll: **Antall lister** :scroll:")
-        let text = ":mag_right: **Antall lister: **" + "`" + obj.playlists.length + "` \n"
+        embed.setTitle(":scroll: **Antall lister: " + obj.playlists.length + "** :scroll:")
+        let text = ""
         let count = 0
         for (let list of obj.playlists) {
             count++
