@@ -2,7 +2,7 @@ import ytdl from 'ytdl-core'
 import fs from 'fs'
 import QueueConstruct from './QueueConstruct.js'
 import Song from './Song.js'
-import { MessageEmbed } from 'discord.js'
+import { MessageEmbed, Message } from 'discord.js'
 import Playlist from './Playlist.js'
 import HELPERS from './helpers.js'
 import YoutubeSearcher from './YoutubeSearcher.js'
@@ -199,18 +199,21 @@ class RythmPlaylist {
     }
 
     async listall() {
-        const obj = await this._readFile()
-        let msg = ":mag_right: **Antall lister: **" + "`" + obj.playlists.length + "` \n"
+        const obj = await this._readFile() 
+        let embed = new MessageEmbed()
+        embed.setTitle(":scroll: **Antall lister** :scroll:")
+        let text = ":mag_right: **Antall lister: **" + "`" + obj.playlists.length + "` \n"
         let count = 0
         for (let list of obj.playlists) {
             count++
             const amount = list.songs.length
-            msg += ":printer: **Liste: **" + "`" + list.name + "`" + " | **Antall sanger:** " + "`" + amount + "`" + " | **Administrator:** " + "<@!" + list.creator + "> :scroll: \n"
+            text += ":printer: **Liste: **" + "`" + list.name + "`" + " | **Antall sanger:** " + "`" + amount + "`" + " | **Administrator:** " + "<@!" + list.creator + "> :scroll: \n"
         }
         if (count === 0) {
-            msg = ":clown: **Fant ingen lister :rolling_eyes: Du kan lage en ny en ved å bruke: **" + "`!pp create <navn_på_liste>`"
+            text = ":clown: **Fant ingen lister :rolling_eyes: Du kan lage en ny en ved å bruke: **" + "`!pp create <navn_på_liste>`"
         }
-        this.textChannel.send(msg)
+        embed.setDescription(text)
+        this.textChannel.send(embed)
     }
 
     async startPlaylist(name, shuffle = false) {
