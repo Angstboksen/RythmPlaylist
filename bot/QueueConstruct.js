@@ -10,10 +10,12 @@ class QueueConstruct {
         this.songs = songs
         this.volume = 5
         this.playing = false
+        this.current = null
     }
 
     next() {
-        return this.songs[0]
+        this.current = this.songs[0]
+        return this.current
     }
 
     size() {

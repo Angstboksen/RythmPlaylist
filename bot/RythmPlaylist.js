@@ -17,10 +17,6 @@ class RythmPlaylist {
         this.file = process.env.PLAYLIST_FILE
     }
 
-    writeTullekopp() {
-        this.textChannel.send(":liar: **Tullekopp, det er jo ikke en gyldig kommando** :poop:")
-    }
-
     execute(message) {
         this.textChannel = message.channel
         this.voiceChannel = message.member.voice.channel
@@ -30,12 +26,12 @@ class RythmPlaylist {
         if (this.commandExists(givenCommand)) {
             const command = this.commands[givenCommand]
             if (!HELPERS.validateCommandLength(args, command.validLength)) {
-                this.writeTullekopp()
+                this.textChannel.send(":liar: **Tullekopp, det er jo ikke en gyldig kommando** :poop:")
                 return
             }
             command.run(message, args)
         } else {
-            this.writeTullekopp()
+            this.textChannel.send(":liar: **Tullekopp, det er jo ikke en gyldig kommando** :poop:")
         }
     }
 
@@ -128,7 +124,7 @@ class RythmPlaylist {
             if (!song) {
                 this.textChannel.send(":rotating_light: **Fant ingen sanger** :rotating_light:")
             }
-            if (!instance.trustedusers.includes(user.id)) {
+            if (!instance.trustedusers.includes(user.id) || instance.trustedusers.includes("everyone")) {
                 this.textChannel.send(":police_car: :cop: **Du har ikke lov til å endre denne listen** :scroll: :rotating_light:")
                 return
             }
@@ -253,6 +249,7 @@ class RythmPlaylist {
     async play() {
         if (this.queue.size() <= 0) {
             this.queue.playing = false
+            this.queue.current = null
             this.textChannel.send(":white_check_mark: :scroll: **Da var denne køen ferdig for denne gang!** :white_check_mark:")
             this.voiceChannel.leave();
             return;
@@ -281,10 +278,10 @@ class RythmPlaylist {
             embed.setColor("RANDOM")
             embed.setTitle(":arrow_forward: **Hva spilles nå? ** :arrow_forward:")
             embed.setDescription(text)
-            this.textChannel.send(embed)
+            this.queue.textChannel.send(embed)
         } catch (e) {
             console.log(e)
-            this.textChannel.send(":disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken: **" + "`" + song.url + "` :rotating_light:")
+            this.queue.textChannel.send(":disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken: **" + "`" + song.url + "` :rotating_light:")
         }
     }
 
@@ -303,6 +300,50 @@ class RythmPlaylist {
         this.textChannel.send(":mage: **Fjernet alle sanger fra køen! ** :pencil2:")
         this.queue.clear()
         this.connection.dispatcher.end()
+    }
+ 
+    pause(channel) {
+        if (!channel) {
+            this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
+            return
+        }
+        if(!this.queue.current) {
+            this.textChannel.send(':robot: **Det er ingen sang som spiller** :thinking:')
+            return
+        }
+        this.textChannel.send(":mage: **Sangen er satt på pause** :pencil2:")
+        this.connection.dispatcher.pause()
+    }
+
+    resume(channel) {
+        if (!channel) {
+            this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
+            return
+        }
+        if(!this.queue.current) {
+            this.textChannel.send(':robot: **Det er ingen sang å fortsette** :thinking:')
+            return
+        }
+        this.textChannel.send(":mage: **Fortsetter sangen: ** `" + this.queue.current.title + "` :pencil2:")
+        this.connection.dispatcher.resume()
+    }
+
+    songInfo() {
+        if(this.queue && this.queue.current) {
+            let song = this.queue.current
+            let embed = new MessageEmbed()
+            let text =
+                ":notes: **Tittel: **" + song.title + "\n" +
+                ":beginner: **Youtube link: **" + song.url + "\n" +
+                ":arrows_counterclockwise: **Antall sanger fortsatt i køen:** " + this.queue.size() + "\n" +
+                ":timer: **Beregnet tid: **" + HELPERS.formattedTime(song.length)
+            embed.setColor("RANDOM")
+            embed.setTitle(":arrow_forward: **Hva spilles nå? ** :arrow_forward:")
+            embed.setDescription(text)
+            this.textChannel.send(embed)
+            return 
+        }
+        this.textChannel.send(':robot: **Det er ingen sang som spiller ** :thinking:')
     }
 
     async displayList(listname) {
@@ -343,7 +384,7 @@ class RythmPlaylist {
             this.textChannel.send(":x: **Argument nr. 2 må være en gyldig index** :x:")
             return
         }
-        if (!instance.trustedusers.includes(user)) {
+        if (!instance.trustedusers.includes(user) || instance.trustedusers.includes("everyone")) {
             this.textChannel.send(":police_car: :cop: **Du har ikke lov til å endre denne listen** :scroll: :rotating_light:")
             return
         }
@@ -360,7 +401,7 @@ class RythmPlaylist {
             this.textChannel.send(":x: **Ingen liste** " + "`" + listname + "`" + " **eksisterer** :x:")
             return
         }
-        if (!instance.trustedusers.includes(user)) {
+        if (!instance.trustedusers.includes(user) || instance.trustedusers.includes("everyone")) {
             this.textChannel.send(":police_car: :cop: **Du har ikke lov til å endre denne listen** :scroll: :rotating_light:")
             return
         }
@@ -404,6 +445,105 @@ class RythmPlaylist {
                 },
                 validFormats: "`!p <link|search keywords>`",
                 commandDescriptions: "Will play the given song link, or search with the given keywords"
+            },
+
+            'pl': {
+                name: "pl",
+                validLength: 2,
+                run: async (message, args) => {
+                    const playlist = args[1]
+                    const obj = await this._readFile()
+                    if (HELPERS.playListExists(playlist, obj)) {
+                        this.startPlaylist(playlist)
+                    } else {
+                        this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
+                    }
+                },
+                validFormats: "`!pl <playlist name>`",
+                commandDescriptions: "Will play the given list in chronological order"
+
+            },
+
+            'shuffle': {
+                name: 'shuffle',
+                validLength: 2,
+                run: async (message, args) => {
+                    const playlist = args[1]
+                    const obj = await this._readFile()
+                    if (HELPERS.playListExists(playlist, obj)) {
+                        this.startPlaylist(playlist, true)
+                    } else {
+                        this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
+                    }
+
+                },
+                validFormats: "`!shuffle <playlist name>`",
+                commandDescriptions: "Will play the given playlist in shuffle mode"
+            },
+
+            's': {
+                name: 's',
+                validLength: 1,
+                run: (message, args) => {
+                    const channel = message.member.voice.channel
+                    this.skip(channel)
+                },
+                validFormats: "`!s`",
+                commandDescriptions: "Will skip to the next song in the queue"
+            },
+
+            'pause': {
+                name: 'pause',
+                validLength: 1,
+                run: (message, args) => {
+                    const channel = message.member.voice.channel
+                    this.pause(channel)
+                },
+                validFormats: "`!pause`",
+                commandDescriptions: "Pauses the currently playing song"
+            },
+
+            'resume': {
+                name: 'resume',
+                validLength: 1,
+                run: (message, args) => {
+                    const channel = message.member.voice.channel
+                    this.resume(channel)
+                },
+                validFormats: "`!resume`",
+                commandDescriptions: "Resumes the song if it is paused"
+            },
+
+            'now': {
+                name: 'now',
+                validLength: 1,
+                run: (message, args) => {
+                    this.songInfo()
+                },
+                validFormats: "`!now`",
+                commandDescriptions: "Gives information about the currently playing song"
+            },
+
+            'stop': {
+                name: 'stop',
+                validLength: 1,
+                run: (message, args) => {
+                    const channel = message.member.voice.channel
+                    this.stop(channel)
+
+                },
+                validFormats: "`!stop`",
+                commandDescriptions: "Will stop the bot and clear the queue"
+            },
+
+            'q': {
+                name: 'q',
+                validLength: 1,
+                run: (message, args) => {
+                    this.showQueue()
+                },
+                validFormats: "`!q`",
+                commandDescriptions: "Will show the current queue"
             },
 
             'cum': {
@@ -485,71 +625,34 @@ class RythmPlaylist {
                 commandDescriptions: "Will list all the stored lists with their name, number of songs and creator"
             },
 
-            'pl': {
-                name: "pl",
+            'list': {
+                name: 'list',
                 validLength: 2,
-                run: async (message, args) => {
-                    const playlist = args[1]
-                    const obj = await this._readFile()
-                    if (HELPERS.playListExists(playlist, obj)) {
-                        this.startPlaylist(playlist)
-                    } else {
-                        this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
-                    }
-                },
-                validFormats: "`!pl <playlist name>`",
-                commandDescriptions: "Will play the given list in chronological order"
-
-            },
-
-            's': {
-                name: 's',
-                validLength: 1,
                 run: (message, args) => {
-                    const channel = message.member.voice.channel
-                    this.skip(channel)
+                    this.displayList(args[1])
                 },
-                validFormats: "`!s`",
-                commandDescriptions: "Will skip to the next song in the queue"
+                validFormats: "`!list <listname>`",
+                commandDescriptions: "Will give overview over the songs in the given list"
             },
 
-            'stop': {
-                name: 'stop',
-                validLength: 1,
+            'delsong': {
+                name: 'delsong',
+                validLength: 3,
                 run: (message, args) => {
-                    const channel = message.member.voice.channel
-                    this.stop(channel)
-
+                    this.deleteSong(message.member.id, args.slice(1, args.length))
                 },
-                validFormats: "`!stop`",
-                commandDescriptions: "Will stop the bot and clear the queue"
+                validFormats: "`!delsong <listname> <index of song>`",
+                commandDescriptions: "Will delete the song at the given index in the list. "
             },
 
-            'q': {
-                name: 'q',
-                validLength: 1,
-                run: (message, args) => {
-                    this.showQueue()
-                },
-                validFormats: "`!q`",
-                commandDescriptions: "Will show the current queue"
-            },
-
-            'shuffle': {
-                name: 'shuffle',
+            'dellist': {
+                name: 'dellist',
                 validLength: 2,
-                run: async (message, args) => {
-                    const playlist = args[1]
-                    const obj = await this._readFile()
-                    if (HELPERS.playListExists(playlist, obj)) {
-                        this.startPlaylist(playlist, true)
-                    } else {
-                        this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
-                    }
-
+                run: (message, args) => {
+                    this.deleteList(message.member.id, args[1])
                 },
-                validFormats: "`!shuffle <playlist name>`",
-                commandDescriptions: "Will play the given playlist in shuffle mode"
+                validFormats: "`!dellist <listname>`",
+                commandDescriptions: "Will delete the given list entirely. "
             },
 
             'commands': {
@@ -571,33 +674,6 @@ class RythmPlaylist {
                 validFormats: "`!commands`",
                 commandDescriptions: "Will give a list over the commands with descriptions"
             },
-            'list': {
-                name: 'list',
-                validLength: 2,
-                run: (message, args) => {
-                    this.displayList(args[1])
-                },
-                validFormats: "`!list <listname>`",
-                commandDescriptions: "Will give overview over the songs in the given list"
-            },
-            'delsong': {
-                name: 'delsong',
-                validLength: 3,
-                run: (message, args) => {
-                    this.deleteSong(message.member.id, args.slice(1, args.length))
-                },
-                validFormats: "`!delsong <listname> <index of song>`",
-                commandDescriptions: "Will delete the song at the given index in the list. "
-            },
-            'dellist': {
-                name: 'dellist',
-                validLength: 2,
-                run: (message, args) => {
-                    this.deleteList(message.member.id, args[1])
-                },
-                validFormats: "`!dellist <listname>`",
-                commandDescriptions: "Will delete the given list entirely. "
-            }
         }
     }
 }
