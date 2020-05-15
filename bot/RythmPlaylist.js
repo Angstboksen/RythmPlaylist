@@ -438,7 +438,9 @@ class RythmPlaylist {
         let text = ""
         for(let champ of champs) {
             champ.user = users[count]
-            text += ":monkey_face: <@!" + champ.user + "> **har fått æren av å spille: **`" + champ.name + ", " + champ.title + "` **i **`" + champ.lane + "` \n \n" 
+            text += ":monkey_face: <@!" + champ.user + "> **har fått æren av å spille: ** \n" + 
+                    ":pray: **Champion: ** `" + champ.name + ", " + champ.title + "` \n" +
+                    ":clinking_glass: **Rolle: **`" + champ.lane + "` \n \n" 
             count++
         }
         embed.setTitle(":video_game: **Nytt league game sa du???** :video_game:")

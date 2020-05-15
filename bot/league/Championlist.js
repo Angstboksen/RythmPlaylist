@@ -5,7 +5,7 @@ class Championlist {
 
     constructor() {
         this.all = this.parseChamps()
-        this.lanes = ["Toplane", "Jungle", "Middle", "Botlane", "Support"]
+        this.lanes = ["Toplane", "Jungle", "Midlane", "Botlane", "Support"]
         this.created = null
     }
 
