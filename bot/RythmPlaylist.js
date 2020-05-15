@@ -420,7 +420,7 @@ class RythmPlaylist {
         let users = []
         let amount = 0
         for(let user of this.voiceChannel.members) {
-            if(!user.bot) {
+            if(!user[1].user.bot) {
                 amount++
                 users.push(user[0])
             }
