@@ -61,7 +61,7 @@ class RythmPlaylist {
     }
 
     async _writeToFile(obj) {
-        let json = JSON.stringify(obj);
+        let json = JSON.stringify(obj,0, 4);
         return await new Promise((resolve, reject) => {
             fs.writeFile(this.file, json, (err) => {
                 if (err) resolve(false);
