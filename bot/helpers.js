@@ -41,18 +41,16 @@ function playListExists(name, obj) {
     return false
 }
 
-function formattedTime(totalSeconds) {
-    let hours = totalSeconds < 3600 ? "" : Math.floor(totalSeconds / 3600)
-    hours = hours === "" ? hours : "0" + hours + ":"
+function formattedTime(secs) {
+    var sec_num = parseInt(secs, 10)
+    var hours = Math.floor(sec_num / 3600)
+    var minutes = Math.floor(sec_num / 60) % 60
+    var seconds = sec_num % 60
 
-    let minutes = totalSeconds < 60 ? "0" : Math.floor(totalSeconds / 60)
-    minutes = minutes === 0 || minutes < 10 ? "0" + minutes : minutes
-
-    let seconds = totalSeconds % 60
-    seconds = seconds === 0 || seconds < 10 ? "0" + seconds : seconds
-
-    let formatted = hours + minutes + ':' + seconds
-    return formatted
+    return [hours, minutes, seconds]
+        .map(v => v < 10 ? "0" + v : v)
+        .filter((v, i) => v !== "00" || i > 0)
+        .join(":")
 }
 
 function shuffleArray(array) {
@@ -67,7 +65,7 @@ function shuffleArray(array) {
 
 const HELPERS = {
     ytRegex: ytRegex,
-    userRegex : userRegex,
+    userRegex: userRegex,
     validateCommandLength: validateCommandLength,
     matchYoutubeUrl: matchYoutubeUrl,
     youtubeify: youtubeify,
