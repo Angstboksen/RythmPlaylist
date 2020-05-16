@@ -31,7 +31,7 @@ const validateMessage = async (message) => {
 }
 
 client.on('message', message => {
-    if (!message.content.startsWith(prefix) || message.author.bot) return;
+    if (!message.content.toLocaleLowerCase().startsWith(prefix) || message.author.bot) return;
     validateMessage(message)
 });
 
