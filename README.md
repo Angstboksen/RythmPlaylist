@@ -1,5 +1,6 @@
 # RythmPlaylist
-A Discord bot for saving and playing playlists. 
+A Discord bot for saving and playing playlists. <br>
+It requires that you have your own Discord application bot already initialized.
 
 ## Work on it yourself
 
