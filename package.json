@@ -8,6 +8,7 @@
         "discord.js": "^12.2.0",
         "dotenv": "^8.2.0",
         "ffmpeg": "^0.0.4",
+        "mysql": "^2.18.1",
         "opusscript": "^0.0.7",
         "rimraf": "^3.0.2",
         "yt-search": "^1.1.2",
