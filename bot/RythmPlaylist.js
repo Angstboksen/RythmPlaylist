@@ -16,19 +16,20 @@ class RythmPlaylist {
         this.commands = this._fetchAllCommands()
         this.textChannel = message.channel
         this.voiceChannel = voiceChannel
-        this.queue = new QueueConstruct(null, null, null)
         this.file = process.env.PLAYLIST_FILE
         this.guilds = new Map()
     }
 
     execute(message) {
-        const guild = message.guild
-        if (!this.guilds.has(guild.id)) {
-            this.guilds.set(guild.id, new Guild(guild.id, guild.name))
-        }
-        console.log(this.guilds)
         this.textChannel = message.channel
         this.voiceChannel = message.member.voice.channel
+
+        const guild = message.guild
+        if (!this.guilds.has(guild.id)) {
+            let newg = new Guild(guild.id, guild.name)
+            newg.queue = new QueueConstruct(this.textChannel, this.voiceChannel, null)
+            this.guilds.set(guild.id, newg)
+        }
 
         let args = message.content.split(' ');
         args.map(a => a = a.toLowerCase())
@@ -70,17 +71,17 @@ class RythmPlaylist {
     async createNewList(guildid, playlistname, sender) {
         let saved = false
 
-        const guild = this.guild.get(guildid)
+        const guild = this.guilds.get(guildid)
         const exists = guild.getPlaylistByName(playlistname)
 
         if (exists || playlistname.length >= 45) {
             saved = false
         } else {
-            const newList = new Playlist(name, [], sender.id, [sender.id])
+            const newList = new Playlist(guildid, playlistname, [], sender, [sender])
             saved = guild.addPlaylist(newList)
         }
 
-        saved ? this.textChannel.send(`:white_check_mark: **Mekka ny liste til deg ladden:** ${playlistname} - **Administrator:** ${sender.user.tag}`)
+        saved ? this.textChannel.send(`:white_check_mark: **Mekka ny liste til deg ladden:** ${playlistname} - **Administrator:** <@!${sender}>`)
             : this.textChannel.send(`:x: **Kunne ikke mekke ny liste med navn:** ${playlistname}`)
     }
 
@@ -89,7 +90,7 @@ class RythmPlaylist {
             this.textChannel.send(":rotating_light: **Fant ingen sanger** :rotating_light:")
         }
 
-        const guild = this.guild.get(guildid)
+        const guild = this.guilds.get(guildid)
         let playlist = guild.getPlaylistByName(playlistname)
         if (!playlist) {
             this.textChannel.send(":rotating_light: :scroll: **Listen finnes ikke** :scroll: :rotating_light:")
@@ -110,17 +111,19 @@ class RythmPlaylist {
 
     }
 
-    enqueue(song) {
-        if (this.queue) {
-            this.queue.enqueue(song)
-            if (this.queue.playing) {
+    enqueue(guildid, song) {
+        const guild = this.guilds.get(guildid)
+        if (guild.queue) {
+            guild.queue.enqueue(song)
+            if (guild.queue.playing) {
                 this.showQueue()
             }
         }
     }
 
-    async showQueue() {
-        this.textChannel.send(await this.queue.show())
+    async showQueue(guildid) {
+        const guild = this.guilds.get(guildid)
+        this.textChannel.send(await guild.queue.show())
     }
 
     async trustUser(guildid, playlistname, sender, trusted) {
@@ -149,10 +152,10 @@ class RythmPlaylist {
     }
 
     listAll(guildid) {
-        const guild = this.guild.get(guildid)
+        const guild = this.guilds.get(guildid)
         let text = ""
         let count = 0
-        for (let list of guild.playlists.length) {
+        for (let list of guild.playlists) {
             count++
             const amount = list.songs.length
             text += `:printer: **Liste:** ${list.name} | **Antall sanger:** ${amount} **Administrator:** <@!${list.creator}> :scroll: \n`
@@ -161,13 +164,13 @@ class RythmPlaylist {
             text = ":clown: **Fant ingen lister :rolling_eyes: Du kan lage en ny en ved å bruke:** !pp create <navn_på_liste>"
         }
         let embed = new MessageEmbed()
-        embed.setTitle(`:scroll: **Antall lister:** ${obj.playlists.length} :scroll:`)
+        embed.setTitle(`:scroll: **Antall lister:** ${guild.playlists.length} :scroll:`)
         embed.setDescription(text)
         this.textChannel.send(embed)
     }
 
     async startPlaylist(guildid, playlistname, shuffle = false) {
-        const guild = this.guild.get(guildid)
+        const guild = this.guilds.get(guildid)
         const playlist = guild.getPlaylistByName(playlistname)
         if (!playlist) {
             this.textChannel.send(":rotating_light: :scroll: **Listen finnes ikke** :scroll: :rotating_light:")
@@ -176,10 +179,10 @@ class RythmPlaylist {
             this.textChannel.send(`:clown: **Spillelisten:** ${playlistname} **har ingen sanger** :clown:`)
             return
         }
-        this.connection = await this.voiceChannel.join()
+        guild.connection = await this.voiceChannel.join()
         let songs = playlist.getSongs(shuffle)
-        this.queue = new QueueConstruct(this.textChannel, this.voiceChannel, this.connection, songs)
-        this.play()
+        guild.queue = new QueueConstruct(this.textChannel, this.voiceChannel, guild.connection, songs)
+        this.play(guildid)
     }
 
     async search(args) {
@@ -196,101 +199,106 @@ class RythmPlaylist {
         const keyword = args.join('')
         song = await searcher.search(keyword)
         if (!song) {
-            this.textChannel.send(":x: **Fant ingen videoer** :x:")
-            return undefined
+            return null
         }
         return song
     }
 
-    async play() {
-        if (this.queue.size() <= 0) {
-            this.queue.playing = false
-            this.queue.current = null
+    async play(guildid) {
+        const guild = this.guilds.get(guildid)
+        if (guild.queue.size() <= 0) {
+            guild.queue.playing = false
+            guild.queue.current = null
             this.textChannel.send(":white_check_mark: :scroll: **Da var denne køen ferdig for denne gang!** :white_check_mark:")
             this.voiceChannel.leave();
             return;
         }
 
         try {
-            this.queue.playing = true
-            const song = this.queue.next()
+            guild.queue.playing = true
+            const song = guild.queue.next()
             const estimatedtime = HELPERS.formattedTime(song.length)
-            const dispatcher = this.connection
+            const dispatcher = guild.queue.connection
                 .play(ytdl(song.url), { filter: 'audioonly' })
                 .on("finish", () => {
-                    this.play();
+                    this.play(guildid);
                 })
                 .on("error", error => this.textChannel.send(`:disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken:** ${song.url} :rotating_light:`));
 
-            dispatcher.setVolumeLogarithmic(this.queue.volume / 5)
-            this.queue.dequeue();
+            dispatcher.setVolumeLogarithmic(guild.queue.volume / 5)
+            guild.queue.dequeue();
 
-            let text = `:notes: **Tittel:** ${song.title} \n 
-                       :beginner: **Youtube link:** ${song.url} \n
-                       :arrows_counterclockwise: **Antall sanger fortsatt i køen:** ${this.queue.size()} \n
+            let text = `:notes: **Tittel:** ${song.title} 
+                       :beginner: **Youtube link:** ${song.url}
+                       :arrows_counterclockwise: **Antall sanger fortsatt i køen:** ${guild.queue.size()}
                        :timer: **Beregnet tid:** ${estimatedtime}`
             let embed = new MessageEmbed()
             embed.setColor("RANDOM")
             embed.setTitle(":arrow_forward: **Hva spilles nå? ** :arrow_forward:")
             embed.setDescription(text)
-            this.queue.textChannel.send(embed)
+            guild.queue.textChannel.send(embed)
         } catch (e) {
             console.log(e)
-            this.queue.textChannel.send(`:disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken: ** ${song.url} :rotating_light:`)
+            guild.queue.textChannel.send(`:disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken: ** ${song.url} :rotating_light:`)
         }
     }
 
-    skip(channel) {
+    skip(guildid) {
+        const guild = this.guilds.get(guildid)
         if (!channel) {
             this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
         }
-        this.connection.dispatcher.end()
+        guild.connection.dispatcher.end()
         this.textChannel.send(":mage: **Skippetipangen, bort med den sangen!** :no_entry:")
     }
 
-    stop(channel) {
-        if (!channel) {
+    stop(guildid) {
+        const guild = this.guilds.get(guildid)
+        if (!this.voiceChannel) {
             this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
         }
         this.textChannel.send(":mage: **Fjernet alle sanger fra køen! ** :pencil2:")
-        this.queue.clear()
-        this.connection.dispatcher.end()
+        guild.queue.clear()
+        guild.connection.dispatcher.end()
     }
 
-    pause(channel) {
-        if (!channel) {
+    pause(guildid) {
+        const guild = this.guilds.get(guildid)
+        if (!this.voiceChannel) {
             this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
             return
         }
-        if (!this.queue.current) {
+        if (!guild.queue.current) {
             this.textChannel.send(':robot: **Det er ingen sang som spiller** :thinking:')
             return
         }
         this.textChannel.send(":mage: **Sangen er satt på pause** :pencil2:")
-        this.connection.dispatcher.pause()
+        guild.connection.dispatcher.pause()
     }
 
-    resume(channel) {
-        if (!channel) {
+    resume(guildid) {
+        const guild = this.guilds.get(guildid)
+        if (!this.voiceChannel) {
             this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
             return
         }
-        if (!this.queue.current) {
+        if (!guild.queue.current) {
             this.textChannel.send(':robot: **Det er ingen sang å fortsette** :thinking:')
             return
         }
 
-        this.textChannel.send(`:mage: **Fortsetter sangen:** ${this.queue.current.title} :pencil2:`)
-        this.connection.dispatcher.resume()
+        this.textChannel.send(`:mage: **Fortsetter sangen:** ${guild.queue.current.title} :pencil2:`)
+        guild.connection.dispatcher.resume()
     }
 
-    songInfo() {
-        if (this.queue && this.queue.current) {
-            let song = this.queue.current
+    songInfo(guildid) {
+        const guild = this.guilds.get(guildid)
+        if (guild.queue && guild.queue.current) {
+            let song = guild.queue.current
             let embed = new MessageEmbed()
-            let text = `:notes: **Tittel:** ${song.title} \n 
-                        :beginner: **Youtube link:** ${song.url} \n
-                        :arrows_counterclockwise: **Antall sanger fortsatt i køen:** ${this.queue.size()} \n
+            let text = `:notes: **Tittel:** ${song.title}
+                        :beginner: **Youtube link:** ${song.url}
+                        :arrows_counterclockwise: **Antall sanger fortsatt i køen:** ${guild.queue.size()}
                         :timer: **Beregnet tid:** ${estimatedtime}`
 
             embed.setColor("RANDOM")
@@ -304,17 +312,20 @@ class RythmPlaylist {
     }
 
     async displayList(guildid, playlistname) {
-        const guild = this.guild.get(guildid)
+        const guild = this.guilds.get(guildid)
         const playlist = guild.getPlaylistByName(playlistname)
         if (!playlist) {
-            this.textChannel.send(`:x: **Ingen liste** ${listname} **eksisterer** :x:`)
+            this.textChannel.send(`:x: **Ingen liste** ${playlistname} **eksisterer** :x:`)
             return
         }
-        let text = ""
+        let text = "**Songs** \n"
         let count = 0
         for (let song of playlist.songs) {
             count++
             text += `**${count}) :notes: Title:**" ${song.title} \n`
+        }
+        if (count === 0) {
+            text += "List contains no songs"
         }
         text += `\n**Owner:** \n<@!${playlist.creator}>`
         text += "\n**Trusted users:** \n"
@@ -331,10 +342,10 @@ class RythmPlaylist {
     }
 
     async deleteSong(guildid, sender, playlistname, songindex) {
-        const guild = this.guild.get(guildid)
+        const guild = this.guilds.get(guildid)
         const playlist = guild.getPlaylistByName(playlistname)
         if (!playlist) {
-            this.textChannel.send(`:x: **Ingen liste** ${listname} **eksisterer** :x:`)
+            this.textChannel.send(`:x: **Ingen liste** ${playlistname} **eksisterer** :x:`)
             return
         }
         if (!Number.isInteger(songindex) || songindex < 1 || songindex > playlist.size()) {
@@ -350,7 +361,7 @@ class RythmPlaylist {
     }
 
     async deleteList(guildid, sender, playlistname) {
-        const guild = this.guild.get(guildid)
+        const guild = this.guilds.get(guildid)
         const playlist = guild.getPlaylistByName(playlistname)
         if (!playlist) {
             this.textChannel.send(`:x: **Ingen liste** ${playlistname} **eksisterer** :x:`)
@@ -387,7 +398,7 @@ class RythmPlaylist {
             champ.user = users[count]
             text += `:monkey_face: <@!${champ.user}> **har fått æren av å spille:**
                      :pray: **Champion:** ${champ.name}, ${champ.title}
-                     :clinking_glass: **Rolle:** ${champ.lane} \n`
+                     :clinking_glass: **Rolle:** ${champ.lane} \n \n`
             count++
         }
         embed.setTitle(":video_game: **Nytt league game sa du???** :video_game:")
@@ -403,222 +414,129 @@ class RythmPlaylist {
 
     _fetchAllCommands() {
         return {
-            'p': {
-                name: "p",
-                validLength: -1,
-                run: async (message, args) => {
-                    const guildid = message.guild.id
-                    try {
-                        if (args.length == 1) {
-                            this.textChannel.send(":x: **Du må spesifisere hva som skal avspilles mannen!** :x:")
-                        }
-                        const filtered = await this.search(args.slice(1, args.length))
-                        if (!filtered) {
-                            return
-                        }
-                        if (this.queue && this.queue.playing) {
-                            this.enqueue(filtered)
-                            return
-                        }
-                        this.connection = await this.voiceChannel.join();
-                        this.queue = new QueueConstruct(this.textChannel, this.voiceChannel, this.connection, [filtered])
-                        this.play();
-
-                    } catch (e) {
-                        console.log(e)
+            'p': new Command('pl', -1, '!p <link|keywords>', 'Will play the given song link, or search with the given keywords', async (guildid, sender, args) => {
+                const guild = this.guilds.get(guildid)
+                try {
+                    if (args.length === 1) {
+                        this.textChannel.send(":x: **Du må spesifisere hva som skal avspilles mannen!** :x:")
                     }
-                },
-                validFormat: "`!p <link|search keywords>`",
-                commandDescription: "Will play the given song link, or search with the given keywords"
-            },
-
-            'pl': {
-                name: "pl",
-                validLength: 2,
-                run: async (message, args) => {
-                    const playlist = args[1]
-                    const obj = await this._readFile()
-                    if (HELPERS.playListExists(playlist, obj)) {
-                        this.startPlaylist(playlist)
-                    } else {
-                        this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
+                    const song = await this.search(args.slice(1, args.length))
+                    if (!song) {
+                        return
                     }
-                },
-                validFormats: "`!pl <playlist name>`",
-                commandDescriptions: "Will play the given list in chronological order"
-
-            },
-
-            'shuffle': {
-                name: 'shuffle',
-                validLength: 2,
-                run: async (message, args) => {
-                    const playlist = args[1]
-                    const obj = await this._readFile()
-                    if (HELPERS.playListExists(playlist, obj)) {
-                        this.startPlaylist(playlist, true)
-                    } else {
-                        this.textChannel.send(":thinking: **Spillelisten finnes ikke** :joy: :joy: ")
+                    if (guild.queue && guild.queue.playing) {
+                        this.enqueue(guildid, song)
+                        this.textChannel.send(`:white_check_mark: **La til** ${song.title} **i køen** :white_check_mark:`)
+                        return
                     }
-                },
-                validFormats: "`!shuffle <playlist name>`",
-                commandDescriptions: "Will play the given playlist in shuffle mode"
-            },
+                    guild.connection = await this.voiceChannel.join();
+                    guild.queue = new QueueConstruct(this.textChannel, this.voiceChannel, guild.connection, [song])
+                    this.play(guildid);
 
-            's': {
-                name: 's',
-                validLength: 1,
-                run: (message, args) => {
-                    const channel = message.member.voice.channel
-                    this.skip(channel)
-                },
-                validFormats: "`!s`",
-                commandDescriptions: "Will skip to the next song in the queue"
-            },
+                } catch (e) {
+                    console.log(e)
+                }
+            }),
 
-            'pause': {
-                name: 'pause',
-                validLength: 1,
-                run: (message, args) => {
-                    const channel = message.member.voice.channel
-                    this.pause(channel)
-                },
-                validFormats: "`!pause`",
-                commandDescriptions: "Pauses the currently playing song"
-            },
+            'pl': new Command('pl', 2, '!pl <listname>', 'Will play the given list in chronological order', (guildid, sender, args) => {
+                const playlistname = args[1]
+                this.startPlaylist(guildid, playlistname)
+            }),
 
-            'resume': {
-                name: 'resume',
-                validLength: 1,
-                run: (message, args) => {
-                    const channel = message.member.voice.channel
-                    this.resume(channel)
-                },
-                validFormats: "`!resume`",
-                commandDescriptions: "Resumes the song if it is paused"
-            },
+            'shuffle': new Command('shuffle', 2, '!shuffle <listname>', 'Will play the given playlist in shuffle mode', (guildid, sender, args) => {
+                const playlistname = args[1]
+                this.startPlaylist(guildid, playlistname, true)
+            }),
 
-            'now': {
-                name: 'now',
-                validLength: 1,
-                run: (message, args) => {
-                    this.songInfo()
-                },
-                validFormats: "`!now`",
-                commandDescriptions: "Gives information about the currently playing song"
-            },
+            's': new Command('s', 1, '!s', 'Will skip to the next song in the queue', (guildid, sender, args) => {
+                this.skip(guildid)
+            }),
 
-            'stop': {
-                name: 'stop',
-                validLength: 1,
-                run: (message, args) => {
-                    const channel = message.member.voice.channel
-                    this.stop(channel)
+            'pause': new Command('pause', 1, '!pause', 'Will pause the current song', (guildid, sender, args) => {
+                this.pause(guildid)
+            }),
 
-                },
-                validFormats: "`!stop`",
-                commandDescriptions: "Will stop the bot and clear the queue"
-            },
+            'resume': new Command('resume', 1, '!resume', 'Resumes the song if it is paused', (guildid, sender, args) => {
+                this.resume(guildid)
+            }),
 
-            'q': {
-                name: 'q',
-                validLength: 1,
-                run: (message, args) => {
-                    this.showQueue()
-                },
-                validFormats: "`!q`",
-                commandDescriptions: "Will show the current queue"
-            },
+            'now': new Command('now', 1, '!now', 'Gives information about the currently playing song', (guildid, sender, args) => {
+                this.songInfo(guildid)
+            }),
 
-            'cum': {
-                name: "cum",
-                validLength: 1,
-                run: (message, args) => {
-                    if (!this.alreadyJoined()) {
-                        this.textChannel.send(":kissing_heart: **Okei her kommer jeg** :heart_eyes:")
-                        this.voiceChannel.join()
-                    }
-                },
-                validFormats: "`!cum`",
-                commandDescriptions: "Will make the bot join the voice channel. It will not play anything"
-            },
+            'stop': new Command('stop', 1, '!stop', 'Will stop the bot and clear the queue', (guildid, sender, args) => {
+                if (!this.alreadyJoined()) {
+                    this.stop(guildid)
+                }
+            }),
 
-            'leave': {
-                name: "leave",
-                validLength: 1,
-                run: (message, args) => {
-                    if (this.alreadyJoined()) {
-                        this.textChannel.send(":x: **Aight Imma head out!** :disappointed_relieved: :zipper_mouth:")
-                        this.voiceChannel.leave()
-                        this.queue.clear()
-                        this.voiceChannel = undefined
-                        this.textChannel = undefined
-                        this.connection = undefined
-                    }
-                },
-                validFormats: "`!leave`",
-                commandDescriptions: "Will kick the bot from the voice channel"
-            },
+            'q': new Command('q', 1, '!q', 'Will show the current queue', (guildid, sender, args) => {
+                this.showQueue(guildid)
 
-            'create': {
-                name: "create",
-                validLength: 2,
-                run: async (message, args) => {
-                    const sender = message.member
-                    this.createNewList(args[1], sender)
-                },
-                validFormats: "`!create <name>`",
-                commandDescriptions: "Will create a new empty list with the given name"
-            },
+            }),
 
-            'add': {
-                name: "add",
-                validLength: -1,
-                run: (message, args) => {
-                    if (this.validateAddCredentials(args)) {
-                        const user = message.member
-                        this.addSongToList(args, user)
-                    } else {
-                        this.textChannel.send(":thinking: **Det er ikke måten man legger til en sang i en liste på** :joy: :joy: ")
-                    }
+            'cum': new Command('cum', 1, '!cum', 'Will make the bot join the voice channel. It will not play anything', (guildid, sender, args) => {
+                if (!this.alreadyJoined()) {
+                    this.textChannel.send(":kissing_heart: **Okei her kommer jeg** :heart_eyes:")
+                    this.voiceChannel.join()
+                }
+            }),
 
-                },
-                validFormats: "`!add <playlist name> <link:search keywords>`",
-                commandDescriptions: "Will add a song to the given list. The song will be either the given link, or a search for the given keywords"
-            },
+            'leave': new Command('leave', 1, '!leave', 'Will kick the bot from the voice channel', (guildid, sender, args) => {
+                const guild = this.guilds.get(guildid)
+                if (this.alreadyJoined()) {
+                    this.textChannel.send(":x: **Aight Imma head out!** :disappointed_relieved: :zipper_mouth:")
+                    this.voiceChannel.leave()
+                    guild.queue.clear()
+                    this.voiceChannel = undefined
+                    this.textChannel = undefined
+                    guild.connection = undefined
+                }
+            }),
 
-            'trust': new Command('trust', 3, '!trust <listname> <@user>', 'Will give editing permissions for the given list to the given user', async (guildid, sender, args) => {
-                console.log(args)
+            'create': new Command('create', 2, '!create <listname>', 'Will create a new empty list with the given name', (guildid, sender, args) => {
+                const playlistname = args[1]
+                this.createNewList(guildid, playlistname, sender)
+            }),
+
+            'add': new Command('add', -1, '!add <listname> <link|keywords>', 'Will add a song to the given list. The song will be either the given link, or a search for the given keywords', async (guildid, sender, args) => {
+                const playlistname = args[1]
+                const keywords = args.slice(2, args.length)
+                const song = await this.search(keywords)
+                this.addSongToList(guildid, sender, song, playlistname)
+            }),
+
+            'trust': new Command('trust', 3, '!trust <listname> <@user>', 'Will give editing permissions for the given list to the given user', (guildid, sender, args) => {
                 const playlistname = args[1]
                 const taggeduser = args[2].match(HELPERS.userRegex)
-                if(!taggeduser) {
+                if (!taggeduser) {
                     this.textChannel.send(":thinking: **Det er ikke måten man legger til en trusted bruker i en liste** :joy: :joy:")
                     return
                 }
                 this.trustUser(guildid, playlistname, sender, taggeduser[1])
             }),
 
-            'listall': new Command('listall', 1, '!listall', 'Will list all the stored lists with their name, number of songs and creator', async (guildid, sender, args) => {
+            'listall': new Command('listall', 1, '!listall', 'Will list all the stored lists with their name, number of songs and creator', (guildid, sender, args) => {
                 this.listAll(guildid)
             }),
 
-            'list': new Command('list', 2, '!list <listname>', 'Will give overview over the songs in the given list', async (guildid, sender, args) => {
+            'list': new Command('list', 2, '!list <listname>', 'Will give overview over the songs in the given list', (guildid, sender, args) => {
                 const playlistname = args[1]
                 this.displayList(guildid, playlistname)
             }),
 
-            'delsong': new Command('delsong', 3, '!delsong <listname> <songindex>', 'Will delete the song at the given index in the list.', async (guildid, sender, args) => {
+            'delsong': new Command('delsong', 3, '!delsong <listname> <songindex>', 'Will delete the song at the given index in the list.', (guildid, sender, args) => {
                 const playlistname = args[1]
-                const songindex = args[2]
+                const songindex = parseInt(args[2])
                 this.deleteSong(guildid, sender, playlistname, songindex)
             }),
 
-            'dellist': new Command('dellist', 2, '!dellist <listname>', 'Will delete the given list entirely.', async (guildid, sender, args) => {
+            'dellist': new Command('dellist', 2, '!dellist <listname>', 'Will delete the given list entirely.', (guildid, sender, args) => {
                 const playlistname = args[1]
                 this.deleteList(guildid, sender, playlistname)
             }),
 
-            'commands': new Command('commands', 1, '!commands', 'Will give a list over the commands with descriptions', async (guildid, sender, args) => {
+            'commands': new Command('commands', 1, '!commands', 'Will give a list over the commands with descriptions', (guildid, sender, args) => {
                 let text = ""
                 for (let command of this.getCommandList()) {
                     const c = this.commands[command]
@@ -630,7 +548,7 @@ class RythmPlaylist {
                 this.textChannel.send(embed)
             }),
 
-            'league': new Command('league', 1, '!league', 'Will randomize champions and lanes for up to 5 if the users in a voice channel', async (guildid, sender, args) => {
+            'league': new Command('league', 1, '!league', 'Will randomize champions and lanes for up to 5 if the users in a voice channel', (guildid, sender, args) => {
                 this.initLeagueGame()
             }),
 

@@ -25,7 +25,9 @@ class Playlist {
     }
 
     removeSong(index) {
+        const song = this.songs[index]
         this.songs.splice(index, 1)
+        return song
     }
 
     addTrustedUser(user) {
@@ -37,8 +39,8 @@ class Playlist {
     }
 
     trusts(sender) {
-        for(let trusted of this.trustedusers) {
-            if(trusted === sender) {
+        for (let trusted of this.trustedusers) {
+            if (trusted === sender) {
                 return true
             }
         }

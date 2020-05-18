@@ -10,6 +10,7 @@ class Guild {
 
     addPlaylist(playlist) {
         this.playlists.push(playlist)
+        return true
     }
 
     removePlaylist(playlistname) {
