@@ -24,7 +24,6 @@ class RythmPlaylist {
         if(!this.guilds) {
             this.guilds = await db.initializeGuilds()
         }
-        console.log(this.guilds)
         this.textChannel = message.channel
         this.voiceChannel = message.member.voice.channel
 
@@ -411,11 +410,6 @@ class RythmPlaylist {
         this.textChannel.send(embed)
     }
 
-    testDB() {
-        const handler = new DatabaseHandler()
-        handler.getAllGuilds()
-    }
-
     _fetchAllCommands() {
         return {
             'p': new Command('pl', -1, '!p <link|keywords>', 'Will play the given song link, or search with the given keywords', async (guildid, sender, args) => {
@@ -554,10 +548,6 @@ class RythmPlaylist {
 
             'league': new Command('league', 1, '!league', 'Will randomize champions and lanes for up to 5 if the users in a voice channel', (guildid, sender, args) => {
                 this.initLeagueGame()
-            }),
-
-            'db': new Command('db', 1, '!db', 'Random db shit for now', async (guildid, sender, args) => {
-                console.log("databasebs")
             })
         }
     }
