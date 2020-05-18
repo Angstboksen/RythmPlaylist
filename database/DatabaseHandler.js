@@ -1,8 +1,8 @@
 import mysql from 'mysql'
 import * as statements from './statements.js'
-import Guild from './bot/Guild.js';
+import Guild from '../bot/Guild.js';
 import Playlist from '../bot/Playlist.js';
-import Song from './bot/Song.js';
+import Song from '../bot/Song.js';
 
 
 export function createConnection() {
