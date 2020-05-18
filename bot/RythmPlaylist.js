@@ -6,21 +6,25 @@ import Playlist from './Playlist.js'
 import HELPERS from './helpers.js'
 import YoutubeSearcher from './YoutubeSearcher.js'
 import Championlist from './league/Championlist.js'
-import DatabaseHandler from '../database/DatabaseHandler.js'
+import * as db from '../database/DatabaseHandler.js'
 import Command from './Command.js'
 import { MessageEmbed } from 'discord.js'
 
 class RythmPlaylist {
 
-    constructor(message, voiceChannel) {
+    constructor() {
         this.commands = this._fetchAllCommands()
-        this.textChannel = message.channel
-        this.voiceChannel = voiceChannel
+        this.textChannel = null
+        this.voiceChannel = null
         this.file = process.env.PLAYLIST_FILE
-        this.guilds = new Map()
+        this.guilds = null
     }
 
-    execute(message) {
+    async execute(message) {
+        if(!this.guilds) {
+            this.guilds = await db.initializeGuilds()
+        }
+        console.log(this.guilds)
         this.textChannel = message.channel
         this.voiceChannel = message.member.voice.channel
 
@@ -116,7 +120,7 @@ class RythmPlaylist {
         if (guild.queue) {
             guild.queue.enqueue(song)
             if (guild.queue.playing) {
-                this.showQueue()
+                this.showQueue(guildid)
             }
         }
     }
@@ -245,7 +249,7 @@ class RythmPlaylist {
 
     skip(guildid) {
         const guild = this.guilds.get(guildid)
-        if (!channel) {
+        if (!this.voiceChannel) {
             this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
         }
         guild.connection.dispatcher.end()

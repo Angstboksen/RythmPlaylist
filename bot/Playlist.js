@@ -1,4 +1,5 @@
 import HELPERS from "./helpers.js"
+import * as db from '../database/DatabaseHandler.js'
 
 class Playlist {
 
@@ -22,17 +23,20 @@ class Playlist {
 
     addSong(song) {
         this.songs.push(song)
+        db.addNewSongToPlaylist(this, song)
     }
 
     removeSong(index) {
         const song = this.songs[index]
         this.songs.splice(index, 1)
+        db.deleteSongFromList(this.guildid, this.name, song.url)
         return song
     }
 
     addTrustedUser(user) {
         if (!this.trustedusers.includes(user)) {
             this.trustedusers.push(user)
+            db.addTrusteduserToPlaylist(this, user)
             return true
         }
         return false

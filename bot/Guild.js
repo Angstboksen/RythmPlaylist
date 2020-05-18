@@ -1,4 +1,5 @@
-import Playlist from "./Playlist.js"
+import * as db from '../database/DatabaseHandler.js'
+
 
 class Guild {
 
@@ -6,10 +7,12 @@ class Guild {
         this.id = id
         this.name = name
         this.playlists = playlists
+        db.addNewGuild(id, name)
     }
 
     addPlaylist(playlist) {
         this.playlists.push(playlist)
+        db.addNewPlaylistToGuild(playlist)
         return true
     }
 
@@ -22,6 +25,7 @@ class Guild {
             index++
         }
         this.playlists.splice(index, 1)
+        db.deleteListFromGuild(this.id, playlistname)
     }
 
     getPlaylistByName(playlistname) {

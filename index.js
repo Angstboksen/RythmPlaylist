@@ -10,6 +10,7 @@ const prefix = '!'
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    BOT = new RythmPlaylist()
 });
 
 client.once("reconnecting", () => {
@@ -22,7 +23,6 @@ client.once("disconnect", () => {
 
 const validateMessage = async (message) => {
     const channel = message.member.voice.channel
-    BOT = BOT ? BOT : new RythmPlaylist(message, channel)
     if (channel) {
         BOT.execute(message)
     } else {
