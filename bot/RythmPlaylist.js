@@ -12,12 +12,12 @@ import { MessageEmbed } from 'discord.js'
 
 class RythmPlaylist {
 
-    constructor() {
+    constructor(guilds = null) {
         this.commands = this._fetchAllCommands()
         this.textChannel = null
         this.voiceChannel = null
         this.file = process.env.PLAYLIST_FILE
-        this.guilds = null
+        this.guilds = guilds
     }
 
     async execute(message) {
@@ -413,6 +413,15 @@ class RythmPlaylist {
         this.textChannel.send(embed)
     }
 
+    getRandomChampion() {
+        const cl = new Championlist()
+        const champ = cl.getRandomChampion()
+        let embed = new MessageEmbed()
+        embed.setTitle(`:game_die: **Lykke til:\n** ${champ.name}, ${champ.title} :video_game:`)
+        embed.setImage(champ.icon)
+        this.textChannel.send(embed)
+    }
+
     _fetchAllCommands() {
         return {
             'p': new Command('pl', -1, '!p <link|keywords>', 'Will play the given song link, or search with the given keywords', async (guildid, sender, args) => {
@@ -551,7 +560,11 @@ class RythmPlaylist {
 
             'league': new Command('league', 1, '!league', 'Will randomize champions and lanes for up to 5 if the users in a voice channel', (guildid, sender, args) => {
                 this.initLeagueGame()
-            })
+            }),
+
+            'champ' : new Command('champ', 1, '!champ', 'Will return a random league champion', (guildid, sender, args) => {
+                this.getRandomChampion()
+            }),
         }
     }
 }

@@ -53,7 +53,7 @@ export async function initializeGuilds() {
         }
         guilds.set(g.guildid, newg)
     }
-
+    console.log("Guilds fetched and initialized!")
     return guilds
 }
 

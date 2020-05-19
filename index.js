@@ -1,5 +1,6 @@
 
 import RythmPlaylist from './bot/RythmPlaylist.js'
+import * as db from './database/DatabaseHandler.js'
 import Discord from 'discord.js'
 import dotenv from 'dotenv'
 
@@ -8,9 +9,9 @@ const client = new Discord.Client();
 let BOT
 const prefix = '!'
 
-client.on('ready', () => {
+client.on('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
-    BOT = new RythmPlaylist()
+    BOT = new RythmPlaylist(await db.initializeGuilds())
 });
 
 client.once("reconnecting", () => {

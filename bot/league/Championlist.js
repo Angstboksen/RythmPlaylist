@@ -36,6 +36,10 @@ class Championlist {
         }
         return list
     }
+
+    getRandomChampion() {
+        return this.all[this.getRandomInt(this.all.length)]
+    }
 }
 
 export default Championlist;
