@@ -1,37 +1,37 @@
 {
-    "name": "rythmplaylist",
-    "version": "1.0.0",
-    "description": "Discord bot for saving and playing playlists.",
-    "main": "index.js",
-    "type": "module",
-    "dependencies": {
-        "discord.js": "^12.2.0",
-        "dotenv": "^8.2.0",
-        "ffmpeg": "^0.0.4",
-        "mysql": "^2.18.1",
-        "opusscript": "^0.0.7",
-        "rimraf": "^3.0.2",
-        "yt-search": "^1.1.2",
-        "ytdl-core": "^2.1.2"
-    },
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node --experimental-modules index.js"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/Olaussen/RythmPlaylist.git"
-    },
-    "keywords": [],
-    "author": "Olaussen",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/Olaussen/RythmPlaylist/issues"
-    },
-    "homepage": "https://github.com/Olaussen/RythmPlaylist#readme",
-    "devDependencies": {
-        "@babel/preset-env": "^7.9.6",
-        "babel-jest": "^26.0.1",
-        "jest": "^26.0.1"
-    }
+  "name": "rythmplaylist",
+  "version": "1.0.0",
+  "description": "Discord bot for saving and playing playlists.",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "discord.js": "^12.2.0",
+    "dotenv": "^8.2.0",
+    "ffmpeg": "^0.0.4",
+    "mysql": "^2.18.1",
+    "opusscript": "^0.0.7",
+    "rimraf": "^3.0.2",
+    "yt-search": "^1.1.2",
+    "ytdl-core": "^2.1.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --experimental-modules index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Olaussen/RythmPlaylist.git"
+  },
+  "keywords": [],
+  "author": "Olaussen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Olaussen/RythmPlaylist/issues"
+  },
+  "homepage": "https://github.com/Olaussen/RythmPlaylist#readme",
+  "devDependencies": {
+    "@babel/preset-env": "^7.9.6",
+    "babel-jest": "^26.0.1",
+    "jest": "^26.0.1"
+  }
 }

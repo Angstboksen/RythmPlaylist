@@ -83,7 +83,7 @@ export async function addNewSongToPlaylist(playlist, song) {
         return await connectAndQuery(statements.insertIntoSongInPLaylist(song.url, playlistid))
     }
 
-    const songInList = await connectAndQuery(statements.selectSongInPLaylist(song.url, playlistid))
+    const songInList = await connectAndQuery(statements.selectSongInPlaylist(song.url, playlistid))
     if (songInList.length === 0) {
         return await connectAndQuery(statements.insertIntoSongInPLaylist(song.url, playlistid))
     }

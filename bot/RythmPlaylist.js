@@ -21,7 +21,7 @@ class RythmPlaylist {
     }
 
     async execute(message) {
-        if(!this.guilds) {
+        if (!this.guilds) {
             this.guilds = await db.initializeGuilds()
         }
         this.textChannel = message.channel
@@ -91,6 +91,7 @@ class RythmPlaylist {
     async addSongToList(guildid, sender, song, playlistname) {
         if (!song) {
             this.textChannel.send(":rotating_light: **Fant ingen sanger** :rotating_light:")
+            return
         }
 
         const guild = this.guilds.get(guildid)
@@ -126,7 +127,9 @@ class RythmPlaylist {
 
     async showQueue(guildid) {
         const guild = this.guilds.get(guildid)
-        this.textChannel.send(await guild.queue.show())
+        if (guild.queue) {
+            this.textChannel.send(await guild.queue.show())
+        }
     }
 
     async trustUser(guildid, playlistname, sender, trusted) {
