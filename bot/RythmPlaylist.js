@@ -301,6 +301,7 @@ class RythmPlaylist {
         const guild = this.guilds.get(guildid)
         if (guild.queue && guild.queue.current) {
             let song = guild.queue.current
+            const estimatedtime = HELPERS.formattedTime(song.length)
             let embed = new MessageEmbed()
             let text = `:notes: **Tittel:** ${song.title}
                         :beginner: **Youtube link:** ${song.url}
