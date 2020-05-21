@@ -409,7 +409,7 @@ class RythmPlaylist {
             text += `:monkey_face: <@!${champ.user}> **har fått æren av å spille:**
                      :pray: **Champion:** ${champ.name}, ${champ.title}
                      :clinking_glass: **Rolle:** ${champ.lane}
-                     :hammer: **Probuilds link:** https://www.probuilds.net/champions/details/${champ.name} \n \n`
+                     :hammer: https://www.probuilds.net/champions/details/${champ.key} \n \n`
             /*text += ":building_construction: **Build** :building_construction: \n"
             for (let item of il.getRandomItemList(champ.lane === "Jungle")) {
                 text += `:rofl: ${item.name} \n`
