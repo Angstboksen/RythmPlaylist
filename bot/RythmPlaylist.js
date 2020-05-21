@@ -45,6 +45,7 @@ class RythmPlaylist {
                 this.textChannel.send(":liar: **Tullekopp, det er jo ikke en gyldig kommando** :poop:")
                 return
             }
+            console.log(`Kommando: '${givenCommand}' av ${message.member.user.tag}`)
             command.run(guild.id, message.member.id, args)
         } else {
             this.textChannel.send(":liar: **Tullekopp, det er jo ikke en gyldig kommando** :poop:")
@@ -397,7 +398,7 @@ class RythmPlaylist {
             }
         }
         let championlist = new Championlist()
-        let il = new Itemlist()
+        //let il = new Itemlist()
         users = HELPERS.shuffleArray(users)
         let champs = championlist.getRandomChampionList(users.length)
         let count = 0
@@ -407,13 +408,13 @@ class RythmPlaylist {
             champ.user = users[count]
             text += `:monkey_face: <@!${champ.user}> **har fått æren av å spille:**
                      :pray: **Champion:** ${champ.name}, ${champ.title}
-                     :clinking_glass: **Rolle:** ${champ.lane} \n`
-            text += ":building_construction: **Build** :building_construction: \n"
+                     :clinking_glass: **Rolle:** ${champ.lane} \n \n`
+            /*text += ":building_construction: **Build** :building_construction: \n"
             for (let item of il.getRandomItemList(champ.lane === "Jungle")) {
                 text += `:rofl: ${item.name} \n`
             }
+            text += "\n"*/
             count++
-            text += "\n"
         }
         embed.setTitle(":video_game: **Nytt league game sa du???** :video_game:")
         embed.setImage('http://www.pngmart.com/files/3/League-of-Legends-Logo-Transparent-Background.png')

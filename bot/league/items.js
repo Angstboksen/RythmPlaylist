@@ -974,7 +974,7 @@ const items = [
         "3706"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "FlatPhysicalDamageMod": 60
       },
@@ -1013,7 +1013,7 @@ const items = [
         "3706"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "FlatHPPoolMod": 400
       },
@@ -1053,7 +1053,7 @@ const items = [
         "3706"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "PercentMovementSpeedMod": 0.07,
         "FlatMagicDamageMod": 60
@@ -1093,7 +1093,7 @@ const items = [
         "3711"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "FlatPhysicalDamageMod": 60
       },
@@ -1133,7 +1133,7 @@ const items = [
         "3711"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "FlatHPPoolMod": 400
       },
@@ -1174,7 +1174,7 @@ const items = [
         "3711"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "PercentMovementSpeedMod": 0.07,
         "FlatMagicDamageMod": 60
@@ -1215,7 +1215,7 @@ const items = [
         "3715"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "FlatPhysicalDamageMod": 60
       },
@@ -1255,7 +1255,7 @@ const items = [
         "3715"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "FlatHPPoolMod": 400
       },
@@ -1296,7 +1296,7 @@ const items = [
         "3715"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "PercentMovementSpeedMod": 0.07,
         "FlatMagicDamageMod": 60
@@ -1337,7 +1337,7 @@ const items = [
         "3706"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "PercentAttackSpeedMod": 0.5
       },
@@ -1376,7 +1376,7 @@ const items = [
         "3711"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "PercentAttackSpeedMod": 0.5
       },
@@ -1416,7 +1416,7 @@ const items = [
         "3715"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "PercentAttackSpeedMod": 0.5
       },
@@ -7296,7 +7296,8 @@ const items = [
         "HealthRegen",
         "Active",
         "GoldPer",
-        "CooldownReduction"
+        "CooldownReduction",
+        "support"
       ],
       "stats": {
         "FlatHPPoolMod": 450
@@ -8155,7 +8156,7 @@ const items = [
         "3133"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "FlatPhysicalDamageMod": 60
       },
@@ -8182,7 +8183,7 @@ const items = [
         "3751"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "FlatHPPoolMod": 400
       },
@@ -8210,7 +8211,7 @@ const items = [
         "1052"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "PercentMovementSpeedMod": 0.07,
         "FlatMagicDamageMod": 60
@@ -8238,7 +8239,7 @@ const items = [
         "1043"
       ],
       "hideFromAll": true,
-      "tags": [],
+      "tags": ["jungle"],
       "stats": {
         "PercentAttackSpeedMod": 0.5
       },
