@@ -3,11 +3,12 @@ import QueueConstruct from './QueueConstruct.js'
 import Song from './Song.js'
 import Guild from './Guild.js'
 import Playlist from './Playlist.js'
-import HELPERS from './helpers.js'
 import YoutubeSearcher from './YoutubeSearcher.js'
 import Championlist from './league/Championlist.js'
 import * as db from '../database/DatabaseHandler.js'
 import Command from './Command.js'
+import Itemlist from './league/Itemlist.js'
+import HELPERS from './helpers.js'
 import { MessageEmbed } from 'discord.js'
 
 class RythmPlaylist {
@@ -396,6 +397,7 @@ class RythmPlaylist {
             }
         }
         let championlist = new Championlist()
+        let il = new Itemlist()
         users = HELPERS.shuffleArray(users)
         let champs = championlist.getRandomChampionList(users.length)
         let count = 0
@@ -405,8 +407,13 @@ class RythmPlaylist {
             champ.user = users[count]
             text += `:monkey_face: <@!${champ.user}> **har fått æren av å spille:**
                      :pray: **Champion:** ${champ.name}, ${champ.title}
-                     :clinking_glass: **Rolle:** ${champ.lane} \n \n`
+                     :clinking_glass: **Rolle:** ${champ.lane} \n`
+            text += ":building_construction: **Build** :building_construction: \n"
+            for (let item of il.getRandomItemList(champ.lane === "Jungle")) {
+                text += `:rofl: ${item.name} \n`
+            }
             count++
+            text += "\n"
         }
         embed.setTitle(":video_game: **Nytt league game sa du???** :video_game:")
         embed.setImage('http://www.pngmart.com/files/3/League-of-Legends-Logo-Transparent-Background.png')
@@ -565,7 +572,7 @@ class RythmPlaylist {
                 this.initLeagueGame()
             }),
 
-            'champ' : new Command('champ', 1, '!champ', 'Will return a random league champion', (guildid, sender, args) => {
+            'champ': new Command('champ', 1, '!champ', 'Will return a random league champion', (guildid, sender, args) => {
                 this.getRandomChampion()
             }),
         }

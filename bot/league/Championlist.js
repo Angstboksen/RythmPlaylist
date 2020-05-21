@@ -7,7 +7,6 @@ class Championlist {
     constructor() {
         this.all = this.parseChamps()
         this.lanes = HELPERS.shuffleArray(["Toplane", "Jungle", "Midlane", "Botlane", "Support"])
-        this.created = null
     }
 
     parseChamps() {
