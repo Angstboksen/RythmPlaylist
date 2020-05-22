@@ -7,7 +7,6 @@ import YoutubeSearcher from './YoutubeSearcher.js'
 import Championlist from './league/Championlist.js'
 import * as db from '../database/DatabaseHandler.js'
 import Command from './Command.js'
-import Itemlist from './league/Itemlist.js'
 import HELPERS from './helpers.js'
 import { MessageEmbed } from 'discord.js'
 
@@ -398,7 +397,6 @@ class RythmPlaylist {
             }
         }
         let championlist = new Championlist()
-        //let il = new Itemlist()
         users = HELPERS.shuffleArray(users)
         let champs = championlist.getRandomChampionList(users.length)
         let count = 0
@@ -409,12 +407,7 @@ class RythmPlaylist {
             text += `:monkey_face: <@!${champ.user}> **har fått æren av å spille:**
                      :pray: **Champion:** ${champ.name}, ${champ.title}
                      :clinking_glass: **Rolle:** ${champ.lane}
-                     :hammer: https://www.probuilds.net/champions/details/${champ.key} \n \n`
-            /*text += ":building_construction: **Build** :building_construction: \n"
-            for (let item of il.getRandomItemList(champ.lane === "Jungle")) {
-                text += `:rofl: ${item.name} \n`
-            }
-            text += "\n"*/
+                     :hammer: https://www.loltrollbuild.com/champions/${champ.key} \n \n`
             count++
         }
         embed.setTitle(":video_game: **Nytt league game sa du???** :video_game:")
