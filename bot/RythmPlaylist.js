@@ -420,8 +420,11 @@ class RythmPlaylist {
         const cl = new Championlist()
         const champ = cl.getRandomChampion()
         let embed = new MessageEmbed()
-        embed.setTitle(`:game_die: **Lykke til:\n** ${champ.name}, ${champ.title} :video_game:`)
+        let text = `:pray: **Champion:** ${champ.name}, ${champ.title}
+                    :hammer: **Build:** https://www.loltrollbuild.com/champions/${champ.key}`
+        embed.setTitle(`:game_die: **Lykke til** :video_game:`)
         embed.setImage(champ.icon)
+        embed.setDescription(text)
         this.textChannel.send(embed)
     }
 

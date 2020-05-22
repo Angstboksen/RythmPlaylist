@@ -7,6 +7,71 @@ Invite the bot to your discord server by following [this link](https://discord.c
 
 [logo]: https://cdn.discordapp.com/app-icons/708320525285457950/392f659c8b929799b917f0192b872ea5.png?size=512 "Juanita doing her thing"
 
+## Commands
+
+* `!p <link|keywords>` 
+Will play the given song link, or search with the given keywords
+
+* `!pl <listname>`
+Will play the given list in chronological order
+
+* `!shuffle <listname>`
+Will play the given playlist in shuffle mode
+
+* `!s`
+Will skip to the next song in the queue
+
+* `!pause`
+Will pause the current song
+
+* `!resume`
+Resumes the song if it is paused
+
+* `!now`
+Gives information about the currently playing song
+
+* `!stop`
+Will stop the bot and clear the queue
+
+* `!q`
+Will show the current queue
+
+* `!cum`
+Will make the bot join the voice channel. It will not play anything
+
+* `!leave`
+Will kick the bot from the voice channel
+
+* `!create <listname>`
+Will create a new empty list with the given name
+
+* `!add <listname> <link|keywords>`
+Will add a song to the given list. The song will be either the given link, or a search for the given keywords
+
+* `!trust <listname> <@user>`
+Will give editing permissions for the given list to the given user
+
+* `!listall`
+Will list all the stored lists with their name, number of songs and creator
+
+* `!list <listname>`
+Will give overview over the songs in the given list
+
+* `!delsong <listname> <songindex>`
+Will delete the song at the given index in the list.
+
+* `!dellist <listname>`
+Will delete the given list entirely.
+
+* `!league`
+Will randomize champions and lanes for up to 5 if the users in a voice channel.
+
+* `!champ`
+Will return a random league champion
+
+* `!commands`
+Will give a list over the commands with descriptions
+
 ## Work on it yourself
 This requires that you have your own Discord application bot already initialized.
 
