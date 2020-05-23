@@ -437,11 +437,11 @@ class RythmPlaylist {
                         this.textChannel.send(":x: **Du må spesifisere hva som skal avspilles mannen!** :x:")
                     }
                     const song = await this.search(args.slice(1, args.length))
-                    song.title = song.title.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
                     if (!song) {
                         this.textChannel.send(`:x: **Ingen sang funnet** :x:`)
                         return
                     }
+                    song.title = song.title.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
                     if (guild.queue && guild.queue.playing) {
                         this.enqueue(guildid, song)
                         this.textChannel.send(`:white_check_mark: **La til** ${song.title} **i køen** :white_check_mark:`)
