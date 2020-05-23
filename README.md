@@ -3,7 +3,7 @@
 # RythmPlaylist
 A Discord bot for saving and playing playlists. <br>
 
-Invite the bot to your discord server by following [this link](https://discord.com/api/oauth2/authorize?client_id=708320525285457950&permissions=0&scope=bot)
+Invite the bot to your discord server [by following this link](https://discord.com/api/oauth2/authorize?client_id=708320525285457950&permissions=0&scope=bot)
 
 [logo]: https://cdn.discordapp.com/app-icons/708320525285457950/392f659c8b929799b917f0192b872ea5.png?size=512 "Juanita doing her thing"
 
