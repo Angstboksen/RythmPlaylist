@@ -439,6 +439,7 @@ class RythmPlaylist {
                     const song = await this.search(args.slice(1, args.length))
                     song.title = song.title.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
                     if (!song) {
+                        this.textChannel.send(`:x: **Ingen sang funnet** :x:`)
                         return
                     }
                     if (guild.queue && guild.queue.playing) {
