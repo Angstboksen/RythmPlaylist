@@ -22,6 +22,14 @@ class QueueConstruct {
         return this.songs.length
     }
 
+    inrange(index) {
+        return index > 0 && index < this.songs.length
+    }
+
+    shift(index) {
+        this.songs = this.songs.splice(index-1, this.songs.length)
+    }
+
     enqueue(song) {
         this.songs.push(song)
     }

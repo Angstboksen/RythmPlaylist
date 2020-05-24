@@ -260,6 +260,32 @@ class RythmPlaylist {
         this.textChannel.send(":mage: **Skippetipangen, bort med den sangen!** :no_entry:")
     }
 
+    skipTo(guildid, index) {
+        index = parseInt(index)
+        const guild = this.guilds.get(guildid)
+        let queue = guild.queue
+        if(!this.voiceChannel || !queue) {
+            return
+        }
+        if (!this.voiceChannel) {
+            this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
+            return
+        }
+        if(!Number.isInteger(index)){
+            this.textChannel.send(':robot: **Argument nr.2 må være et tall** :thinking:')
+            return
+        }
+
+        if(!queue.inrange(index)){
+            this.textChannel.send(':robot: **Ikke en gyldig index** :thinking:')
+            return
+        }
+
+        guild.queue.shift(index)
+        guild.connection.dispatcher.end()
+        this.textChannel.send(":mage: **Skipper som fææææn!** :no_entry:")
+    }
+
     stop(guildid) {
         const guild = this.guilds.get(guildid)
         if (!this.voiceChannel) {
@@ -330,7 +356,7 @@ class RythmPlaylist {
         let text = "**Songs** \n"
         let count = 0
         for (let song of playlist.songs) {
-            if(text.length > 1500) {
+            if (text.length > 1500) {
                 break;
             }
             count++
@@ -433,7 +459,7 @@ class RythmPlaylist {
     }
 
     spot(guildid) {
-        let s =  new SpotifyApi()
+        let s = new SpotifyApi()
         const guild = this.guilds.get(guildid)
         let playlist = guild.getPlaylistByName("schindler")
         s.syncPlaylistToJuanita("46t7u5go24tjd4mdhfobe2ns6", "Schindler's Fist", playlist)
@@ -479,6 +505,11 @@ class RythmPlaylist {
 
             's': new Command('s', 1, '!s', 'Will skip to the next song in the queue', (guildid, sender, args) => {
                 this.skip(guildid)
+            }),
+
+            'skip': new Command('skip', 2, '!skip <index>', 'Will skip to the song at the index given in the queue', (guildid, sender, args) => {
+                const index = args[1]
+                this.skipTo(guildid, index)
             }),
 
             'pause': new Command('pause', 1, '!pause', 'Will pause the current song', (guildid, sender, args) => {
