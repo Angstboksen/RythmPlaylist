@@ -330,6 +330,9 @@ class RythmPlaylist {
         let text = "**Songs** \n"
         let count = 0
         for (let song of playlist.songs) {
+            if(text.length > 1500) {
+                break;
+            }
             count++
             text += `**${count}) :notes: Title:**" ${song.title} \n`
         }
