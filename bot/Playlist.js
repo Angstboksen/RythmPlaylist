@@ -24,6 +24,7 @@ class Playlist {
     addSong(song) {
         this.songs.push(song)
         db.addNewSongToPlaylist(this, song)
+
     }
 
     removeSong(index) {

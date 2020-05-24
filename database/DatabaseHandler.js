@@ -23,12 +23,14 @@ export async function connectAndQuery(query) {
             con.query(query, function (err, result, fields) {
                 if (err) reject(err);
                 resolve(result)
+                con.end()
             });
         });
     })
 }
 
 export async function initializeGuilds() {
+    console.log("Fetching data from database!")
     let guilds = new Map()
     let guildlist = await getAllGuilds()
     for (let g of guildlist) {

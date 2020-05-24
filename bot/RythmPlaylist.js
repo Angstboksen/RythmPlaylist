@@ -9,6 +9,7 @@ import * as db from '../database/DatabaseHandler.js'
 import Command from './Command.js'
 import HELPERS from './helpers.js'
 import { MessageEmbed } from 'discord.js'
+import SpotifyApi from './spotify/SpotifyApi.js'
 
 class RythmPlaylist {
 
@@ -428,6 +429,13 @@ class RythmPlaylist {
         this.textChannel.send(embed)
     }
 
+    spot(guildid) {
+        let s =  new SpotifyApi()
+        const guild = this.guilds.get(guildid)
+        let playlist = guild.getPlaylistByName("schindler")
+        s.syncPlaylistToJuanita("46t7u5go24tjd4mdhfobe2ns6", "Schindler's Fist", playlist)
+    }
+
     _fetchAllCommands() {
         return {
             'p': new Command('pl', -1, '!p <link|keywords>', 'Will play the given song link, or search with the given keywords', async (guildid, sender, args) => {
@@ -574,6 +582,10 @@ class RythmPlaylist {
             'champ': new Command('champ', 1, '!champ', 'Will return a random league champion', (guildid, sender, args) => {
                 this.getRandomChampion()
             }),
+
+            /*'sp': new Command('sp', 1, '!sp', 'Will return a random league champion', (guildid, sender, args) => {
+                this.spot(guildid)
+            }),*/
         }
     }
 }
