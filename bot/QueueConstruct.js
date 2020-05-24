@@ -47,8 +47,8 @@ class QueueConstruct {
             ":scroll: **Slik ser køen ut** :scroll: | **Antall sanger: **" + this.size()
         embed.setTitle(title)
         console.log(text.length)
-        if(text.length > 5500) {
-            text = text.slice(0, 5500)
+        if(text.length > 1500) {
+            text = text.slice(0, 1500)
         }
         embed.setDescription(text)
 
