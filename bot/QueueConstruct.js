@@ -39,6 +39,9 @@ class QueueConstruct {
         let text = ""
         let count = 0
         for (let song of this.songs) {
+            if(text > 1500) {
+                break;
+            }
             count++
             text += "**" + count + ")** :notes: **Tittel: **" + song.title + "\n"
         }
@@ -46,10 +49,6 @@ class QueueConstruct {
         let title = count === 0 ? ":scroll: **Køen er tom!** :scroll:" :
             ":scroll: **Slik ser køen ut** :scroll: | **Antall sanger: **" + this.size()
         embed.setTitle(title)
-        console.log(text.length)
-        if(text.length > 1500) {
-            text = text.slice(0, 1500)
-        }
         embed.setDescription(text)
 
         return embed
