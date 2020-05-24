@@ -46,6 +46,10 @@ class QueueConstruct {
         let title = count === 0 ? ":scroll: **Køen er tom!** :scroll:" :
             ":scroll: **Slik ser køen ut** :scroll: | **Antall sanger: **" + this.size()
         embed.setTitle(title)
+        console.log(text.length)
+        if(text.length > 5500) {
+            text = text.slice(0, 5500)
+        }
         embed.setDescription(text)
 
         return embed
