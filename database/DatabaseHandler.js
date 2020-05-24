@@ -32,31 +32,36 @@ export async function connectAndQuery(query) {
 export async function initializeGuilds() {
     console.log("Fetching data from database!")
     let guilds = new Map()
-    let guildlist = await getAllGuilds()
-    for (let g of guildlist) {
-        let newg = new Guild(g.guildid, g.name)
-        const playlists = await getPlaylistsByGuildId(g.guildid)
-        for (let p of playlists) {
-            const songitems = await getSongsInPlaylist(p.playlistid)
-            let songs = []
-            for (let s of songitems) {
-                let songitem = await getSongByUrl(s.songurl)
-                songitem = songitem[0]
-                const song = new Song(songitem.url, songitem.title, songitem.length, songitem.thumbnail)
-                songs.push(song)
+    try {
+        let guildlist = await getAllGuilds()
+        for (let g of guildlist) {
+            let newg = new Guild(g.guildid, g.name)
+            const playlists = await getPlaylistsByGuildId(g.guildid)
+            for (let p of playlists) {
+                const songitems = await getSongsInPlaylist(p.playlistid)
+                let songs = []
+                for (let s of songitems) {
+                    let songitem = await getSongByUrl(s.songurl)
+                    songitem = songitem[0]
+                    const song = new Song(songitem.url, songitem.title, songitem.length, songitem.thumbnail)
+                    songs.push(song)
+                }
+                const trusteditems = await getTrustedUsers(p.playlistid)
+                let trustedusers = [p.creator]
+                for (let t of trusteditems) {
+                    trustedusers.push(t.userid)
+                }
+                const newpl = new Playlist(g.guildid, p.name, songs, p.creator, trustedusers)
+                newg.addPlaylist(newpl)
             }
-            const trusteditems = await getTrustedUsers(p.playlistid)
-            let trustedusers = [p.creator]
-            for (let t of trusteditems) {
-                trustedusers.push(t.userid)
-            }
-            const newpl = new Playlist(g.guildid, p.name, songs, p.creator, trustedusers)
-            newg.addPlaylist(newpl)
+            guilds.set(g.guildid, newg)
         }
-        guilds.set(g.guildid, newg)
+        console.log("Guilds fetched and initialized!")
+        return guilds
+    }catch(e){
+        console.log("An error occured when fetching data")
+        return new Map()
     }
-    console.log("Guilds fetched and initialized!")
-    return guilds
 }
 
 export async function addNewGuild(id, name) {
