@@ -39,11 +39,11 @@ class QueueConstruct {
         let text = ""
         let count = 0
         for (let song of this.songs) {
-            if(text > 1500) {
+            if(text.length > 1500) {
                 break;
             }
             count++
-            text += "**" + count + ")** :notes: **Tittel: **" + song.title + "\n"
+            text += `**${count})** :notes: **Tittel:** ${song.title}\n`
         }
         text += "\n :timer: **Beregnet total tid: ** " + await this.getEstimatedTime()
         let title = count === 0 ? ":scroll: **Køen er tom!** :scroll:" :
