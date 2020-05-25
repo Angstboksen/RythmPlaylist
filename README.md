@@ -21,6 +21,9 @@ Will play the given playlist in shuffle mode
 * `!s`
 Will skip to the next song in the queue
 
+* `!skip <index>`
+Will skip to the song at the index given in the queue
+
 * `!pause`
 Will pause the current song
 
