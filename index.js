@@ -9,7 +9,7 @@ dotenv.config()
 let testing = false
 const client = new Discord.Client();
 let BOT
-const prefix = '-'
+const prefix = testing ? "-" : "!"
 
 client.on('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -36,4 +36,4 @@ client.on('message', message => {
     validateMessage(message)
 });
 
-client.login(testing ? "NzE1MjYwODI4OTE5NjYwNTU1.Xs6omQ.2UmDz5MVI37YCNouoWvEXfyi3aw" : process.env.BOT_TOKEN);
+client.login(testing ? process.env.TEST_TOKEN : process.env.BOT_TOKEN);
