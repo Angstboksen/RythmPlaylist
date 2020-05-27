@@ -13,7 +13,7 @@ import SpotifyApi from './spotify/SpotifyApi.js'
 
 class RythmPlaylist {
 
-    constructor(guilds = null) {
+    constructor(guilds = db.initializeGuilds()) {
         this.commands = this._fetchAllCommands()
         this.textChannel = null
         this.voiceChannel = null
@@ -22,18 +22,26 @@ class RythmPlaylist {
     }
 
     async execute(message) {
-        if (!this.guilds) {
-            this.guilds = await db.initializeGuilds()
-        }
-        this.textChannel = message.channel
-        this.voiceChannel = message.member.voice.channel
 
         const guild = message.guild
+        let fetched = this.guilds.get(guild.id)
         if (!this.guilds.has(guild.id)) {
             let newg = new Guild(guild.id, guild.name)
-            newg.queue = new QueueConstruct(this.textChannel, this.voiceChannel, null)
+            newg.queue.textChannel = await message.channel
+            newg.queue.voiceChannel = await message.member.voice.channel
+            fetched = newg
             this.guilds.set(guild.id, newg)
+        } else {
+            if (!fetched.queue.textChannel) {
+                fetched.queue.textChannel = await message.channel
+            }
+            if (!fetched.queue.voiceChannel) {
+                fetched.queue.voiceChannel = await message.member.voice.channel
+            }
         }
+
+        this.textChannel = await fetched.queue.textChannel
+        this.voiceChannel = await fetched.queue.voiceChannel
 
         let args = message.content.split(' ');
         args.map(a => a = a.toLowerCase())
@@ -42,7 +50,7 @@ class RythmPlaylist {
         if (this.commandExists(givenCommand)) {
             const command = this.commands[givenCommand]
             if (!HELPERS.validateCommandLength(args, command.validLength)) {
-                this.textChannel.send(":liar: **Tullekopp, det er jo ikke en gyldig kommando** :poop:")
+                textChannel.send(":liar: **Tullekopp, det er jo ikke en gyldig kommando** :poop:")
                 return
             }
             console.log(`Kommando: '${givenCommand}' av ${message.member.user.tag}`)
@@ -229,7 +237,11 @@ class RythmPlaylist {
             const dispatcher = guild.queue.connection
                 .play(ytdl(song.url), { filter: 'audioonly' })
                 .on("finish", () => {
-                    this.play(guildid);
+                    try {
+                        this.play(guildid);
+                    } catch (e) {
+                        this.textChannel.send(`:disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken:** ${song.url} :rotating_light:`)
+                    }
                 })
                 .on("error", error => this.textChannel.send(`:disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken:** ${song.url} :rotating_light:`));
 
@@ -256,34 +268,38 @@ class RythmPlaylist {
         if (!this.voiceChannel) {
             this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
         }
-        guild.connection.dispatcher.end()
-        this.textChannel.send(":mage: **Skippetipangen, bort med den sangen!** :no_entry:")
+        if (guild.connection) {
+            guild.connection.dispatcher.end()
+            this.textChannel.send(":mage: **Skippetipangen, bort med den sangen!** :no_entry:")
+        }
     }
 
     skipTo(guildid, index) {
         index = parseInt(index)
         const guild = this.guilds.get(guildid)
         let queue = guild.queue
-        if(!this.voiceChannel || !queue) {
+        if (!this.voiceChannel || !queue) {
             return
         }
         if (!this.voiceChannel) {
             this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
             return
         }
-        if(!Number.isInteger(index)){
+        if (!Number.isInteger(index)) {
             this.textChannel.send(':robot: **Argument nr.2 må være et tall** :thinking:')
             return
         }
 
-        if(!queue.inrange(index)){
+        if (!queue.inrange(index)) {
             this.textChannel.send(':robot: **Ikke en gyldig index** :thinking:')
             return
         }
 
-        guild.queue.shift(index)
-        guild.connection.dispatcher.end()
-        this.textChannel.send(":mage: **Skipper som fææææn!** :no_entry:")
+        if (guild.connection) {
+            guild.queue.shift(index)
+            guild.connection.dispatcher.end()
+            this.textChannel.send(":mage: **Skipper som fææææn!** :no_entry:")
+        }
     }
 
     stop(guildid) {
@@ -291,9 +307,11 @@ class RythmPlaylist {
         if (!this.voiceChannel) {
             this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
         }
-        this.textChannel.send(":mage: **Fjernet alle sanger fra køen! ** :pencil2:")
-        guild.queue.clear()
-        guild.connection.dispatcher.end()
+        if (guild.connection) {
+            guild.queue.clear()
+            guild.connection.dispatcher.end()
+            this.textChannel.send(":mage: **Fjernet alle sanger fra køen! ** :pencil2:")
+        }
     }
 
     pause(guildid) {
@@ -306,8 +324,10 @@ class RythmPlaylist {
             this.textChannel.send(':robot: **Det er ingen sang som spiller** :thinking:')
             return
         }
-        this.textChannel.send(":mage: **Sangen er satt på pause** :pencil2:")
-        guild.connection.dispatcher.pause()
+        if (guild.connection) {
+            guild.connection.dispatcher.pause()
+            this.textChannel.send(":mage: **Sangen er satt på pause** :pencil2:")
+        }
     }
 
     resume(guildid) {
@@ -321,8 +341,10 @@ class RythmPlaylist {
             return
         }
 
-        this.textChannel.send(`:mage: **Fortsetter sangen:** ${guild.queue.current.title} :pencil2:`)
-        guild.connection.dispatcher.resume()
+        if (guild.connection) {
+            guild.connection.dispatcher.resume()
+            this.textChannel.send(`:mage: **Fortsetter sangen:** ${guild.queue.current.title} :pencil2:`)
+        }
     }
 
     songInfo(guildid) {
@@ -472,6 +494,7 @@ class RythmPlaylist {
                 try {
                     if (args.length === 1) {
                         this.textChannel.send(":x: **Du må spesifisere hva som skal avspilles mannen!** :x:")
+                        return
                     }
                     const song = await this.search(args.slice(1, args.length))
                     if (!song) {

@@ -1,4 +1,5 @@
 import * as db from '../database/DatabaseHandler.js'
+import QueueConstruct from './QueueConstruct.js'
 
 
 class Guild {
@@ -7,6 +8,7 @@ class Guild {
         this.id = id
         this.name = name
         this.playlists = playlists
+        this.queue = new QueueConstruct(null, null, null)
         db.addNewGuild(id, name)
     }
 

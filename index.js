@@ -5,9 +5,11 @@ import Discord from 'discord.js'
 import dotenv from 'dotenv'
 
 dotenv.config()
+
+let testing = false
 const client = new Discord.Client();
 let BOT
-const prefix = '!'
+const prefix = '-'
 
 client.on('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -24,10 +26,8 @@ client.once("disconnect", () => {
 
 const validateMessage = async (message) => {
     const channel = message.member.voice.channel
-    if (channel) {
+    if (channel && BOT) {
         BOT.execute(message)
-    } else {
-        message.channel.send(':robot: **Du må være i en voice channel bro!** :thinking:');
     }
 }
 
@@ -36,4 +36,4 @@ client.on('message', message => {
     validateMessage(message)
 });
 
-client.login(process.env.BOT_TOKEN);
+client.login(testing ? "NzE1MjYwODI4OTE5NjYwNTU1.Xs6omQ.2UmDz5MVI37YCNouoWvEXfyi3aw" : process.env.BOT_TOKEN);
