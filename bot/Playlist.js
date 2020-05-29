@@ -22,8 +22,11 @@ class Playlist {
     }
 
     addSong(song) {
-        this.songs.push(song)
-        db.addNewSongToPlaylist(this, song)
+        if (!this.hasSong(song.url)) {
+            console.log(`Song added: ${song.title}`)
+            this.songs.push(song)
+            db.addNewSongToPlaylist(this, song)
+        }
 
     }
 
@@ -65,6 +68,11 @@ class Playlist {
         return this.songs.length
     }
 
+    clear() {
+        for (let i = 0; i < this.size(); i++) {
+            this.removeSong(i)
+        }
+    }
 }
 
 export default Playlist;

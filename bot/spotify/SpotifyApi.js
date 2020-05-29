@@ -61,19 +61,20 @@ class SpotifyApi {
         }
     }
 
-    async getSongsInPlaylist(userid, playlistname) {
+    async getSongsInPlaylist(userid, playlistname, offset = 0, carry = []) {
         console.log("Getting songs!")
         try {
             const playlist = await this.getUserPlaylist(userid, playlistname)
             if (playlist) {
                 const yt = new YoutubeSearcher()
-                const url = `${this.baseurl}/playlists/${playlist.id}/tracks`
+                const url = `${this.baseurl}/playlists/${playlist.id}/tracks?offset=${offset}`
                 const httpconfig = getConfig("GET", url, this.token)
                 const result = await axios(httpconfig)
                 let items = result.data.items
-                let songs = []
+                let songs = carry
                 for (let item of items) {
                     let songid = item.track.id
+                    //console.log(item)
                     let songinfo = await this.getSongInformation(songid)
                     console.log(`${(songs.length / items.length * 100).toFixed(1)}%`)
                     let song = await yt.search(`${songinfo.title}, ${songinfo.artist}`)
@@ -90,14 +91,13 @@ class SpotifyApi {
 
     async syncPlaylistToJuanita(userid, playlistname, playlist) {
         try {
-            const songs = await this.getSongsInPlaylist(userid, playlistname)
-            console.log(playlist)
-            console.log(songs)
+           const songs = await this.getSongsInPlaylist(userid, playlistname, 100)
             for(let song of songs) {
-                if(!song) {
+                if(!song || playlist.hasSong(song.url)) {
                     continue
                 }
                 console.log("Adding song: " + song.title)
+                
                 playlist.addSong(song)
             }
         } catch (e) {
