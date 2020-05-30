@@ -82,7 +82,7 @@ Will give a list over the commands with descriptions
 This requires that you have your own Discord application bot already initialized.
 
 1. Clone the project with the following command, or fork your own: <br>
-```git clone https://github.com/Olaussen/RythmPlaylist.git``` <br>
+```git clone https://github.com/Angstboksen/RythmPlaylist.git``` <br>
 
 2. After cloning. Be sure to have *npm* installed. . Install the needed dependencies with either of the following command(s):  <br>
 ```npm i``` ```npm install```
