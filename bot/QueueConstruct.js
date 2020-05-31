@@ -30,7 +30,11 @@ class QueueConstruct {
         this.songs = this.songs.splice(index-1, this.songs.length)
     }
 
-    enqueue(song) {
+    enqueue(song, first = false) {
+        if(first) {
+            this.songs = [song].concat(this.songs)
+            return
+        }
         this.songs.push(song)
     }
 

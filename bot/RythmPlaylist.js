@@ -9,7 +9,7 @@ import * as db from '../database/DatabaseHandler.js'
 import Command from './Command.js'
 import HELPERS from './helpers.js'
 import { MessageEmbed } from 'discord.js'
-import SpotifyApi from './spotify/SpotifyApi.js'
+//import SpotifyApi from './spotify/SpotifyApi.js'
 
 class RythmPlaylist {
 
@@ -125,10 +125,14 @@ class RythmPlaylist {
 
     }
 
-    enqueue(guildid, song) {
+    enqueue(guildid, song, first = false) {
         const guild = this.guilds.get(guildid)
         if (guild.queue) {
-            guild.queue.enqueue(song)
+            if (first) {
+                guild.queue.enqueue(song, true)
+            } else {
+                guild.queue.enqueue(song)
+            }
             if (guild.queue.playing) {
                 this.showQueue(guildid)
             }
@@ -505,6 +509,29 @@ class RythmPlaylist {
                     if (guild.queue && guild.queue.playing) {
                         this.enqueue(guildid, song)
                         this.textChannel.send(`:white_check_mark: **La til** ${song.title} **i køen** :white_check_mark:`)
+                        return
+                    }
+                    guild.connection = await this.voiceChannel.join();
+                    guild.queue = new QueueConstruct(this.textChannel, this.voiceChannel, guild.connection, [song])
+                    this.play(guildid);
+
+                } catch (e) {
+                    console.log(e)
+                }
+            }),
+
+            'first': new Command('first', -1, '!first <link|keywords>', 'Will place the given song fist in the current queue', async (guildid, sender, args) => {
+                const guild = this.guilds.get(guildid)
+                try {
+                    const song = await this.search(args.slice(1, args.length))
+                    if (!song) {
+                        this.textChannel.send(`:x: **Ingen sang funnet** :x:`)
+                        return
+                    }
+                    song.title = song.title.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
+                    if (guild.queue && guild.queue.playing) {
+                        this.enqueue(guildid, song, true)
+                        this.textChannel.send(`:white_check_mark: **La til** ${song.title} **først i køen** :white_check_mark:`)
                         return
                     }
                     guild.connection = await this.voiceChannel.join();
