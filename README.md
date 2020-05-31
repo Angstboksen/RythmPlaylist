@@ -21,7 +21,6 @@ Will play the given list in chronological order
 * `!first <link|keywords>`
 Will place the given song fist in the current queue
 
-
 * `!shuffle <listname>`
 Will play the given playlist in shuffle mode
 
