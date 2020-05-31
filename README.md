@@ -18,6 +18,10 @@ Will play the given song link, or search with the given keywords
 * `!pl <listname>`
 Will play the given list in chronological order
 
+* `!first <link|keywords>`
+Will place the given song fist in the current queue
+
+
 * `!shuffle <listname>`
 Will play the given playlist in shuffle mode
 
