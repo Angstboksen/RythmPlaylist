@@ -1,6 +1,6 @@
 ![https://discord.com/api/oauth2/authorize?client_id=708320525285457950&permissions=0&scope=bot][logo]
 
-# RythmPlaylist
+# RythmPlaylist (aka. Juanita)
 A Discord bot for saving and playing playlists. <br>
 
 Invite the bot to your discord server [by following this link](https://discord.com/api/oauth2/authorize?client_id=708320525285457950&permissions=0&scope=bot)
