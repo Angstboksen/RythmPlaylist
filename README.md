@@ -28,7 +28,7 @@ The commandprefix is the one with the `!` in front of it, while any other parame
 | `!cum` | Will make the bot join the voice channel. It will not play anything |
 | `!leave` | Will kick the bot from the voice channel |
 | `!create <listname>` | Will create a new empty list with the given name |
-| `!trust <listname> <@user>` | Show file differences that haven't been staged |
+| `!trust <listname> <@user>` | Will give editing permissions for the given list to the given user |
 | `!add <listname> <link or keywords>` | Will add a song to the given list. The song will be either the given link, or a search for the given keywords |
 | `!listall` | Will list all the stored lists with their name, number of songs and creator |
 | `!list <listname>` | Will give overview over the songs in the given list |
