@@ -36,6 +36,7 @@ The commandprefix is the one with the `!` in front of it, while any other parame
 | `!dellist <listname>` | Will delete the given list entirely |
 | `!league` | Will randomize champions and lanes for up to 5 if the users in a voice channel |
 | `!champ` | Will return a random league champion |
+| `!pet` | Tell the bot is has done a good job. Good bot! |
 | `!commands` | Will give a list over the commands with descriptions |
 
 ## Work on it yourself

@@ -9,7 +9,7 @@ import * as db from '../database/DatabaseHandler.js'
 import Command from './Command.js'
 import HELPERS from './helpers.js'
 import { MessageEmbed } from 'discord.js'
-//import SpotifyApi from './spotify/SpotifyApi.js'
+import SpotifyApi from './spotify/SpotifyApi.js'
 
 class RythmPlaylist {
 
@@ -484,12 +484,17 @@ class RythmPlaylist {
         this.textChannel.send(embed)
     }
 
-    /*sync(guildid) {
+    sync(guildid) {
         let s = new SpotifyApi()
         const guild = this.guilds.get(guildid)
         let playlist = guild.getPlaylistByName("schindler")
         s.syncPlaylistToJuanita("46t7u5go24tjd4mdhfobe2ns6", "Schindler's Fist", playlist)
-    }*/
+    }
+
+    pet(guildid, sender) {
+        const guild = this.guilds.get(guildid)
+        guild.petBot(sender)
+    }
 
     _fetchAllCommands() {
         return {
@@ -647,6 +652,18 @@ class RythmPlaylist {
                 this.deleteList(guildid, sender, playlistname)
             }),
 
+            'league': new Command('league', 1, '!league', 'Will randomize champions and lanes for up to 5 if the users in a voice channel', (guildid, sender, args) => {
+                this.initLeagueGame()
+            }),
+
+            'champ': new Command('champ', 1, '!champ', 'Will return a random league champion', (guildid, sender, args) => {
+                this.getRandomChampion()
+            }),
+
+            'pet': new Command('pet', 1, '!pet', 'Tell the bot is has done a good job. Good bot!', (guildid, sender, args) => {
+                this.pet(guildid, sender)
+            }),
+
             'commands': new Command('commands', 1, '!commands', 'Will give a list over the commands with descriptions', (guildid, sender, args) => {
                 let text = ""
                 for (let command of this.getCommandList()) {
@@ -657,14 +674,6 @@ class RythmPlaylist {
                 embed.setTitle("**:scroll: The list of valid commands :scroll:**")
                 embed.setDescription(text)
                 this.textChannel.send(embed)
-            }),
-
-            'league': new Command('league', 1, '!league', 'Will randomize champions and lanes for up to 5 if the users in a voice channel', (guildid, sender, args) => {
-                this.initLeagueGame()
-            }),
-
-            'champ': new Command('champ', 1, '!champ', 'Will return a random league champion', (guildid, sender, args) => {
-                this.getRandomChampion()
             }),
 
             /*'sync': new Command('sp', 1, '!sp', 'Will return a random league champion', (guildid, sender, args) => {

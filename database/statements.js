@@ -39,6 +39,10 @@ export  function insertIntoGuilds(id, name) {
     return `INSERT INTO guilds (guildid, name) VALUES (${id}, "${name}")`
 }
 
+export  function insertPet(guildid, sender) {
+    return `INSERT INTO pets (guildid, userid) VALUES (${guildid}, "${sender}")`
+}
+
 export  function insertIntoPlaylists({name, creator, guildid}) {
     return `INSERT INTO playlists (name, creator, guildid) VALUES ("${name}", "${creator}", ${guildid})`
 }

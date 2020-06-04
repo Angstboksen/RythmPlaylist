@@ -38,6 +38,10 @@ class Guild {
         }
         return null
     }
+
+    petBot(sender) {
+        db.petBot(this.id, sender)
+    }
 }
 
 export default Guild

@@ -110,6 +110,10 @@ export async function addTrusteduserToPlaylist(playlist, user) {
     }
 }
 
+export async function petBot(guildid, sender) {
+    await connectAndQuery(statements.insertPet(guildid, sender))
+}
+
 
 export async function getAllGuilds() {
     const result = await connectAndQuery(statements.selectAllGuilds())
