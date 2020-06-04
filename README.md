@@ -1,6 +1,6 @@
 ![https://discord.com/api/oauth2/authorize?client_id=708320525285457950&permissions=0&scope=bot][logo]
 
-# RythmPlaylist
+# RythmPlaylist (aka. Juanita)
 A Discord bot for saving and playing playlists. <br>
 
 Invite the bot to your discord server [by following this link](https://discord.com/api/oauth2/authorize?client_id=708320525285457950&permissions=0&scope=bot)
@@ -10,7 +10,7 @@ Invite the bot to your discord server [by following this link](https://discord.c
 ## Commands
 
 These are the current accepted commands. As the bot is still in development, some of these might be a little fucked, but they should (in theory) work as intended.
-The commandprefix is the one with the `!` in front of it, while any other parameters is described inside the `<>`. Happy dying!
+The command itself is the one with the `!` in front of it, while any other parameters is described inside the `<>`. Happy dying!
 
 | Command | Description |
 | --- | --- |
@@ -34,7 +34,7 @@ The commandprefix is the one with the `!` in front of it, while any other parame
 | `!list <listname>` | Will give overview over the songs in the given list |
 | `!delsong <listname> <songindex>` | Will delete the song at the given index in the list |
 | `!dellist <listname>` | Will delete the given list entirely |
-| `!league` | Will randomize champions and lanes for up to 5 if the users in a voice channel |
+| `!league` | Will randomize champions and lanes for up to 5 people currently in a voice channel |
 | `!champ` | Will return a random league champion |
 | `!pet` | Tell the bot is has done a good job. Good bot! |
 | `!commands` | Will give a list over the commands with descriptions |
