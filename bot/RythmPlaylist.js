@@ -494,6 +494,7 @@ class RythmPlaylist {
     pet(guildid, sender) {
         const guild = this.guilds.get(guildid)
         guild.petBot(sender)
+        this.textChannel.send(`:two_hearts: **UwU** takk bby! ILU <@!${sender}>`)
     }
 
     _fetchAllCommands() {
