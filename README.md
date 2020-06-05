@@ -54,4 +54,8 @@ This requires that you have your own Discord application bot already initialized
 ```npm start```<br>
 This will automatically make your bot online in discord
 
+## Misc
+
+RythmPlaylist aka. Juanita is currently being hosted on Heroku
+
 
