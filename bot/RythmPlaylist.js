@@ -50,7 +50,7 @@ class RythmPlaylist {
         if (this.commandExists(givenCommand)) {
             const command = this.commands[givenCommand]
             if (!HELPERS.validateCommandLength(args, command.validLength)) {
-                textChannel.send(":liar: **Tullekopp, det er jo ikke en gyldig kommando** :poop:")
+                this.textChannel.send(":liar: **Tullekopp, det er jo ikke en gyldig kommando** :poop:")
                 return
             }
             console.log(`Kommando: '${givenCommand}' av ${message.member.user.tag}`)
