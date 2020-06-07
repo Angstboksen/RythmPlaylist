@@ -306,6 +306,24 @@ class RythmPlaylist {
         }
     }
 
+    randomSkip(guildid) {
+        const guild = this.guilds.get(guildid)
+        let queue = guild.queue
+        if (!this.voiceChannel || !queue) {
+            return
+        }
+        if (!this.voiceChannel) {
+            this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
+            return
+        }
+        const random = Math.floor(Math.random() * queue.size())
+        const skippedsongs = queue.songs.slice(random, queue.size())
+        queue.songs = queue.songs.splice(0, random)
+        queue.songs.concat(skippedsongs)
+        this.skip(guildid)
+        this.textChannel.send(":mage: **Skipper som fææææn!** :no_entry:")
+    }
+
     stop(guildid) {
         const guild = this.guilds.get(guildid)
         if (!this.voiceChannel) {
@@ -561,6 +579,10 @@ class RythmPlaylist {
 
             's': new Command('s', 1, '!s', 'Will skip to the next song in the queue', (guildid, sender, args) => {
                 this.skip(guildid)
+            }),
+
+            'r': new Command('r', 1, '!r', 'Will skip to a random song in the queue', (guildid, sender, args) => {
+                this.randomSkip(guildid)
             }),
 
             'skip': new Command('skip', 2, '!skip <index>', 'Will skip to the song at the index given in the queue', (guildid, sender, args) => {
