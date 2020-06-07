@@ -309,6 +309,7 @@ class RythmPlaylist {
     randomSkip(guildid) {
         const guild = this.guilds.get(guildid)
         let queue = guild.queue
+        let list = [].concat(queue.songs)
         if (!this.voiceChannel || !queue) {
             return
         }
@@ -317,11 +318,10 @@ class RythmPlaylist {
             return
         }
         const random = Math.floor(Math.random() * queue.size())
-        const skippedsongs = queue.songs.slice(random, queue.size())
-        queue.songs = queue.songs.splice(0, random)
-        queue.songs.concat(skippedsongs)
+        const firstsongs = list.slice(random, queue.size())
+        const lastsongs = list.slice(0, random)
+        queue.songs = firstsongs.concat(lastsongs)
         this.skip(guildid)
-        this.textChannel.send(":mage: **Skipper som fææææn!** :no_entry:")
     }
 
     stop(guildid) {
