@@ -18,6 +18,7 @@ The command itself is the one with the `!` in front of it, while any other param
 | `!pl <listname>` | Will play the given list in chronological order |
 | `!first <link or keywords>` | Will place the given song fist in the current queue |
 | `!shuffle <listname>` | Will play the given playlist in shuffle mode |
+| `!r` | Will skip to the a random song in the queue, and append the skipped songs to the back of it  |
 | `!s` | Will skip to the next song in the queue |
 | `!skip <index>` | Will skip to the song at the index given in the queue |
 | `!pause` | Will pause the current song |
