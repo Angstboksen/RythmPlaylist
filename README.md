@@ -18,6 +18,7 @@ The command itself is the one with the `!` in front of it, while any other param
 | `!pl <listname>` | Will play the given list in chronological order |
 | `!first <link or keywords>` | Will place the given song fist in the current queue |
 | `!shuffle <listname>` | Will play the given playlist in shuffle mode |
+| `!r` | Will skip to the a random song in the queue, and append the skipped songs to the back of it  |
 | `!s` | Will skip to the next song in the queue |
 | `!skip <index>` | Will skip to the song at the index given in the queue |
 | `!pause` | Will pause the current song |
@@ -45,7 +46,7 @@ This requires that you have your own Discord application bot already initialized
 1. Clone the project with the following command, or fork your own: <br>
 ```git clone https://github.com/Angstboksen/RythmPlaylist.git``` <br>
 
-2. After cloning. Be sure to have *npm* installed. . Install the needed dependencies with either of the following command(s):  <br>
+2. After cloning. Be sure to have *npm* installed. Install the needed dependencies with either of the following command(s):  <br>
 ```npm i``` ```npm install```
 
 3. If you want to run your bot, make sure to change the values of the environment variables located in *.env_setup* to match your values. After that is done, rename the file to *.env*
