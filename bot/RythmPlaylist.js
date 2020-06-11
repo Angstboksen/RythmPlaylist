@@ -502,10 +502,11 @@ class RythmPlaylist {
         this.textChannel.send(embed)
     }
 
-    sync(guildid) {
+    async sync(guildid) {
         let s = new SpotifyApi()
         const guild = this.guilds.get(guildid)
         let playlist = guild.getPlaylistByName("schindler")
+        //playlist.clear()
         s.syncPlaylistToJuanita("46t7u5go24tjd4mdhfobe2ns6", "Schindler's Fist", playlist)
     }
 
@@ -641,6 +642,10 @@ class RythmPlaylist {
                 const playlistname = args[1]
                 const keywords = args.slice(2, args.length)
                 const song = await this.search(keywords)
+                if(!song) {
+                    this.textChannel.send(":x: **Ingen sang funnet** :x:")
+                    return 
+                }
                 song.title = song.title.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
                 this.addSongToList(guildid, sender, song, playlistname)
             }),
@@ -699,9 +704,9 @@ class RythmPlaylist {
                 this.textChannel.send(embed)
             }),
 
-            /*'sync': new Command('sp', 1, '!sp', 'Will return a random league champion', (guildid, sender, args) => {
+            'sync': new Command('sp', 1, '!sp', 'Will return a random league champion', (guildid, sender, args) => {
                 this.sync(guildid)
-            }),*/
+            }),
         }
     }
 }
