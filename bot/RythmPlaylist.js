@@ -704,9 +704,9 @@ class RythmPlaylist {
                 this.textChannel.send(embed)
             }),
 
-            'sync': new Command('sp', 1, '!sp', 'Will return a random league champion', (guildid, sender, args) => {
+            /*'sync': new Command('sp', 1, '!sp', 'Will return a random league champion', (guildid, sender, args) => {
                 this.sync(guildid)
-            }),
+            }),*/
         }
     }
 }
