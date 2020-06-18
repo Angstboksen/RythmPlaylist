@@ -46,7 +46,7 @@ class RythmPlaylist {
         let args = message.content.split(' ');
         args.map(a => a = a.toLowerCase())
 
-        const givenCommand = args[0].substring(1, args[0].length)
+        const givenCommand = args[0].substring(1, args[0].length).toLowerCase()
         if (this.commandExists(givenCommand)) {
             const command = this.commands[givenCommand]
             if (!HELPERS.validateCommandLength(args, command.validLength)) {
@@ -73,6 +73,7 @@ class RythmPlaylist {
     }
 
     alreadyJoined() {
+        console.log(this.voiceChannel.members)
         for (let user of this.voiceChannel.members) {
             if (user[0] === process.env.BOT_ID) {
                 return true
