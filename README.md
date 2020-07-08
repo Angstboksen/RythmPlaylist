@@ -58,5 +58,6 @@ This will automatically make your bot online in discord
 ## Misc
 
 RythmPlaylist aka. Juanita is currently being hosted on Heroku
+JuanitaPlaylist is another bot which works as a testing bot for when hotfixes must be pushed quickly
 
 
