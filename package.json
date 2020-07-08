@@ -12,7 +12,7 @@
         "mysql": "^2.18.1",
         "opusscript": "^0.0.7",
         "rimraf": "^3.0.2",
-        "yt-search": "^1.1.2",
+        "yt-search": "^2.1.1",
         "ytdl-core": "^2.1.5"
     },
     "scripts": {
@@ -32,7 +32,7 @@
     "homepage": "https://github.com/Olaussen/RythmPlaylist#readme",
     "devDependencies": {
         "@babel/preset-env": "^7.10.1",
-        "babel-jest": "^26.0.1",
-        "jest": "^26.0.1"
+        "babel-jest": "^26.1.0",
+        "jest": "^26.1.0"
     }
 }

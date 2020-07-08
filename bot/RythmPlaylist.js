@@ -73,7 +73,6 @@ class RythmPlaylist {
     }
 
     alreadyJoined() {
-        console.log(this.voiceChannel.members)
         for (let user of this.voiceChannel.members) {
             if (user[0] === process.env.BOT_ID) {
                 return true
@@ -217,7 +216,7 @@ class RythmPlaylist {
         }
 
         const searcher = new YoutubeSearcher()
-        const keyword = args.join('')
+        const keyword = args.join(' ')
         song = await searcher.search(keyword)
         if (!song) {
             return null
