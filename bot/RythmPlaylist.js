@@ -74,6 +74,7 @@ class RythmPlaylist {
 
     alreadyJoined() {
         for (let user of this.voiceChannel.members) {
+            console.log(user[0])
             if (user[0] === process.env.BOT_ID) {
                 return true
             }
@@ -531,12 +532,15 @@ class RythmPlaylist {
                         return
                     }
                     song.title = song.title.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
+                    if(!this.alreadyJoined()) {
+                        guild.queue.clear()
+                        guild.connection = await this.voiceChannel.join();
+                    }
                     if (guild.queue && guild.queue.playing) {
                         this.enqueue(guildid, song)
                         this.textChannel.send(`:white_check_mark: **La til** ${song.title} **i køen** :white_check_mark:`)
                         return
                     }
-                    guild.connection = await this.voiceChannel.join();
                     guild.queue = new QueueConstruct(this.textChannel, this.voiceChannel, guild.connection, [song])
                     this.play(guildid);
 
@@ -554,12 +558,15 @@ class RythmPlaylist {
                         return
                     }
                     song.title = song.title.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
+                    if(!this.alreadyJoined()) {
+                        guild.queue.clear()
+                        guild.connection = await this.voiceChannel.join();
+                    }
                     if (guild.queue && guild.queue.playing) {
                         this.enqueue(guildid, song, true)
                         this.textChannel.send(`:white_check_mark: **La til** ${song.title} **først i køen** :white_check_mark:`)
                         return
                     }
-                    guild.connection = await this.voiceChannel.join();
                     guild.queue = new QueueConstruct(this.textChannel, this.voiceChannel, guild.connection, [song])
                     this.play(guildid);
 
