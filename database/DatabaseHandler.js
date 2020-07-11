@@ -57,6 +57,7 @@ export async function initializeGuilds() {
             guilds.set(g.guildid, newg)
         }
         console.log("Guilds fetched and initialized!")
+        console.log("Using database: " + process.env.DB_NAME + " from host: " + process.env.DB_HOST)
         return guilds
     }catch(e){
         console.log("An error occured when fetching data")
