@@ -74,7 +74,6 @@ class RythmPlaylist {
 
     alreadyJoined() {
         for (let user of this.voiceChannel.members) {
-            console.log(user[0])
             if (user[0] === process.env.BOT_ID) {
                 return true
             }
