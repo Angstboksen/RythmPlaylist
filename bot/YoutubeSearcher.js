@@ -4,8 +4,8 @@ import Song from './Song.js'
 
 class YoutubeSearcher {
 
-    async search(keywords, number = 0) {
-        console.log("Searching: " + keywords + " | Try number: " + number+1)
+    async search(keywords, number = 1) {
+        console.log(`Searching: ${keywords} | Try number: ${number}`)
         if (keywords === "" || number == 3) {
             return undefined
         }

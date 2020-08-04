@@ -516,6 +516,23 @@ class RythmPlaylist {
         this.textChannel.send(`:two_hearts: **UwU** takk bby! ILU <@!${sender}>`)
     }
 
+    kill(guildid, index) {
+        index = parseInt(index)
+        const guild = this.guilds.get(guildid)
+        const queue = guild.queue
+        if (!queue || queue.size() === 0) {
+            this.textChannel.send(`:x: **Finner ingen kø** :x:`)
+            return
+        }
+        if (!index || index < 1 || index > queue.size()) {
+            this.textChannel.send(":x: **Argument må være en gyldig index** :x:")
+            return
+        }
+        const song = queue.songs[index-1]
+        queue.songs.splice(index - 1, 1)
+        this.textChannel.send(`:mage: **Fjernet** ${song.title} **køen listen** :scroll:`)
+    }
+
     _fetchAllCommands() {
         return {
             'p': new Command('pl', -1, '!p <link|keywords>', 'Will play the given song link, or search with the given keywords', async (guildid, sender, args) => {
@@ -618,6 +635,11 @@ class RythmPlaylist {
             'q': new Command('q', 1, '!q', 'Will show the current queue', (guildid, sender, args) => {
                 this.showQueue(guildid)
 
+            }),
+
+            'kill': new Command('kill', 2, '!kill', 'Remove a specific song from the queue', (guildid, sender, args) => {
+                const index = args[1]
+                this.kill(guildid, index)
             }),
 
             'cum': new Command('cum', 1, '!cum', 'Will make the bot join the voice channel. It will not play anything', (guildid, sender, args) => {
