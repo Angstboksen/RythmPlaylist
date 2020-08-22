@@ -262,7 +262,7 @@ class RythmPlaylist {
             embed.setDescription(text)
             guild.queue.textChannel.send(embed)
         } catch (e) {
-            console.log(e)
+            console.log(`Det skjedde en feil med avspillingen av denne linken: ${song.url}`)
             guild.queue.textChannel.send(`:disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken: ** ${song.url} :rotating_light:`)
         }
     }
