@@ -12,7 +12,7 @@
         "mysql": "^2.18.1",
         "opusscript": "^0.0.7",
         "rimraf": "^3.0.2",
-        "yt-search": "^2.1.9",
+        "yt-search": "^2.2.3",
         "ytdl-core": "^2.1.5"
     },
     "scripts": {
@@ -33,6 +33,6 @@
     "devDependencies": {
         "@babel/preset-env": "^7.11.0",
         "babel-jest": "^26.3.0",
-        "jest": "^26.4.1"
+        "jest": "^26.4.2"
     }
 }

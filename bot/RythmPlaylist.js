@@ -194,6 +194,7 @@ class RythmPlaylist {
         const playlist = guild.getPlaylistByName(playlistname)
         if (!playlist) {
             this.textChannel.send(":rotating_light: :scroll: **Listen finnes ikke** :scroll: :rotating_light:")
+            return
         }
         if (playlist.size() <= 0) {
             this.textChannel.send(`:clown: **Spillelisten:** ${playlistname} **har ingen sanger** :clown:`)
@@ -272,7 +273,7 @@ class RythmPlaylist {
         if (!this.voiceChannel) {
             this.textChannel.send(':robot: **Du må være i en voice channel bro!** :thinking:')
         }
-        if (guild.connection) {
+        if (guild.connection.dispatcher) {
             guild.connection.dispatcher.end()
             this.textChannel.send(":mage: **Skippetipangen, bort med den sangen!** :no_entry:")
         }
