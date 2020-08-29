@@ -238,6 +238,10 @@ class RythmPlaylist {
         try {
             guild.queue.playing = true
             const song = guild.queue.next()
+            if(!song) {
+                guild.queue.textChannel.send(`:disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken: ** ${song.url} :rotating_light:`)
+                return
+            }
             const estimatedtime = HELPERS.formattedTime(song.length)
             const dispatcher = guild.queue.connection
                 .play(ytdl(song.url), { filter: 'audioonly' })
