@@ -41,7 +41,7 @@ class RythmPlaylist {
         }
 
         this.textChannel = await fetched.queue.textChannel
-        this.voiceChannel = await fetched.queue.voiceChannel
+        this.voiceChannel = await message.member.voice.channel
 
         let args = message.content.split(' ');
         args.map(a => a = a.toLowerCase())
