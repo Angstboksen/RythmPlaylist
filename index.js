@@ -6,7 +6,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-let testing = true
+let testing = false
 const client = new Discord.Client();
 let BOT
 const prefix = testing ? "-" : "!"
