@@ -211,7 +211,7 @@ class RythmPlaylist {
         if (args.length === 1 && ytdl.validateURL(args[0])) {
             const obj = await ytdl.getBasicInfo(args[0])
             if (obj) {
-                song = new Song(obj.video_url, obj.title, parseInt(obj.length_seconds))
+                song = new Song(obj.videoDetails.video_url, obj.videoDetails.title, parseInt(obj.videoDetails.lengthSeconds))
                 return song
             }
         }
@@ -267,8 +267,8 @@ class RythmPlaylist {
             embed.setDescription(text)
             guild.queue.textChannel.send(embed)
         } catch (e) {
-            console.log(`Det skjedde en feil med avspillingen av denne linken: ${song.url}`)
-            guild.queue.textChannel.send(`:disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken: ** ${song.url} :rotating_light:`)
+            console.log(`Det skjedde en feil med avspillingen av denne linken`)
+            guild.queue.textChannel.send(`:disappointed_relieved: **Det skjedde en feil med avspillingen av denne linken **  :rotating_light:`)
         }
     }
 
