@@ -6,7 +6,7 @@
     "type": "module",
     "dependencies": {
         "axios": "^0.20.0",
-        "discord.js": "^12.3.1",
+        "discord.js": "^12.4.0",
         "dotenv": "^8.2.0",
         "ffmpeg": "^0.0.4",
         "mysql": "^2.18.1",
@@ -32,7 +32,7 @@
     "homepage": "https://github.com/Olaussen/RythmPlaylist#readme",
     "devDependencies": {
         "@babel/preset-env": "^7.12.1",
-        "babel-jest": "^26.5.2",
-        "jest": "^26.5.3"
+        "babel-jest": "^26.6.0",
+        "jest": "^26.6.0"
     }
 }
