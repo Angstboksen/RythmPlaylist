@@ -540,7 +540,7 @@ class RythmPlaylist {
 
     _fetchAllCommands() {
         return {
-            'p': new Command('pl', -1, '!p <link|keywords>', 'Will play the given song link, or search with the given keywords', async (guildid, sender, args) => {
+            'p': new Command('p', -1, '!p <link|keywords>', 'Will play the given song link, or search with the given keywords', async (guildid, sender, args) => {
                 const guild = this.guilds.get(guildid)
                 try {
                     if (args.length === 1) {
